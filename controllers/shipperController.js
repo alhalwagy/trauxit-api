@@ -1,17 +1,10 @@
-const Shipper = require('../models/shipper');
+const Shipper = require('../models/shipperModel');
+const appError = require('../utils/appError');
+const catchAsync = require('../utils/catchAsync');
 
 // Controller functions
 
 // Add a new shipper
-const addShipper = async (req, res) => {
-  try {
-    const newShipper = new Shipper(req.body);
-    await newShipper.save();
-    res.status(201).json({ message: 'Shipper added successfully' });
-  } catch (error) {
-    res.status(500).json({ error: 'Error adding shipper' });
-  }
-};
 
 // Remove a shipper by ID
 const removeShipper = async (req, res) => {
@@ -47,7 +40,6 @@ const updateShipper = async (req, res) => {
 };
 
 module.exports = {
-  addShipper,
   removeShipper,
   editShipper,
   updateShipper,

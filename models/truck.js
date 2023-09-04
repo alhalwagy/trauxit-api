@@ -1,4 +1,4 @@
-const mongoose = require('mongoose');
+const mongoose = require("mongoose");
 
 // Define the schema
 const truckSchema = new mongoose.Schema({
@@ -10,6 +10,6 @@ const truckSchema = new mongoose.Schema({
 });
 
 // Create the model
-const Truck = mongoose.model('Truck', truckSchema);
+const Truck = mongoose.model("Truck", truckSchema);
 
 module.exports = Truck;
