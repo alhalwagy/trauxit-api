@@ -4,6 +4,8 @@ const cors = require('cors');
 const cookieParser = require('cookie-parser');
 const loadsRoutes = require('./routes/loadsRouter');
 const shipperRoutes = require('./routes/shipperRouter');
+const adminRoutes = require('./routes/adminRouter');
+
 const errorController = require('./controllers/errorController');
 const AppError = require('./utils/appError');
 
@@ -27,6 +29,7 @@ app.use(cookieParser());
 
 // app.use('/loads', loadsRoutes);
 app.use('/api/v1/shipper', shipperRoutes);
+app.use('/api/v1/admin', adminRoutes);
 
 app.all('*', (req, res, next) => {
   next(new AppError(`Can't find ${req.originalUrl} on this server!!`, 404));

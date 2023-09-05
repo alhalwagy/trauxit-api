@@ -1,7 +1,9 @@
-const User = require('../models/userModel');
+const jwt = require('jsonwebtoken');
+const { promisify } = require('util');
+
 const AppError = require('../utils/appError');
 const catchAsync = require('../utils/catchAsync');
-const jwt = require('jsonwebtoken');
+const Admin = require('../models/adminModel');
 
 const signToken = (id) => {
   return jwt.sign({ id }, process.env.JWT_SECRET, {
@@ -31,41 +33,18 @@ const createSendToken = (user, statusCode, req, res) => {
   });
 };
 
-exports.signupUser = catchAsync(async (req, res, next) => {
-  const newShipper = await User.create({
+exports.SignupAdmins = catchAsync(async (req, res, next) => {
+  const newAdmin = await Admin.create({
     role: req.body.role,
     fullName: req.body.fullName,
     userName: req.body.userName,
-    ID_card_number: req.body.ID_card_number,
     password: req.body.password,
     birthDate: req.body.birthDate,
-    companyName: req.body.companyName,
-    address: req.body.address,
-    rating: req.body.rating,
-    location_address: req.body.location_address,
+    email: req.body.email,
     passwordConfirm: req.body.passwordConfirm,
   });
 
-  createSendToken(newShipper, 201, req, res);
-});
-
-exports.login = catchAsync(async (req, res, next) => {
-  if (!req.body.password || !req.body.userName) {
-    return next(new AppError('Please provide us by email and password', 400));
-  }
-  const user = await User.findOne({ userName: req.body.userName }).select(
-    '+password'
-  );
-
-  if (
-    !user ||
-    !(await user.correctPassword(req.body.password, user.password))
-  ) {
-    return next(new AppError('Incorrect email or password', 401));
-  }
-  user.hashToken = signToken(user._id);
-  await user.save({ validateBeforeSave: false });
-  createSendToken(user, 200, req, res);
+  createSendToken(newAdmin, 201, req, res);
 });
 
 exports.protect = catchAsync(async (req, res, next) => {
@@ -86,7 +65,7 @@ exports.protect = catchAsync(async (req, res, next) => {
   }
   const decoded = await promisify(jwt.verify)(token, process.env.JWT_SECRET);
 
-  const freshUser = await User.findById(decoded.id);
+  const freshUser = await Admin.findById(decoded.id);
 
   if (!freshUser) {
     return next(
@@ -101,15 +80,15 @@ exports.protect = catchAsync(async (req, res, next) => {
   //     new AppError('User recently changed password. Please log in again.', 401)
   //   );
   // }
-  req.user = freshUser;
-  res.locals.user = freshUser;
+  req.admin = freshUser;
+  res.locals.admin = freshUser;
   next();
 });
 
 exports.restrictTo =
   (...roles) =>
   (req, res, next) => {
-    if (!roles.includes(req.user.role)) {
+    if (!roles.includes(req.admin.role)) {
       return next(
         new AppError(
           "You don't have the permission to access this service ",
