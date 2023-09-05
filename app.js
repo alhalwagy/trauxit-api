@@ -3,7 +3,7 @@ const morgan = require('morgan');
 const cors = require('cors');
 const cookieParser = require('cookie-parser');
 const loadsRoutes = require('./routes/loadsRouter');
-const shipperRoutes = require('./routes/shipperRouter');
+const shipperRoutes = require('./routes/userRouter');
 const adminRoutes = require('./routes/adminRouter');
 
 const errorController = require('./controllers/errorController');
