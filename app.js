@@ -30,6 +30,7 @@ app.use(cookieParser());
 // app.use('/loads', loadsRoutes);
 app.use('/api/v1/shipper', shipperRoutes);
 app.use('/api/v1/admin', adminRoutes);
+app.use('/api/v1/loads', loadsRoutes);
 
 app.all('*', (req, res, next) => {
   next(new AppError(`Can't find ${req.originalUrl} on this server!!`, 404));

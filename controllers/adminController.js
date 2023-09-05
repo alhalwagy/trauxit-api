@@ -1,9 +1,8 @@
 const jwt = require('jsonwebtoken');
 const { promisify } = require('util');
-
 const AppError = require('../utils/appError'); // Import custom error handling utility
-const catchAsync = require('../utils/catchAsync'); // Import utility for catching async errors
 const Admin = require('../models/adminModel'); // Import the Admin model
+const catchAsync = require('../utils/catchAsync');
 
 // Function to sign a JSON Web Token (JWT) with user ID
 const signToken = (id) => {

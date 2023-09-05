@@ -1,22 +1,23 @@
-const express = require("express");
+const express = require('express');
 
+const authController = require('../controllers/authController');
+const loadController = require('../controllers/loadsController');
+const adminController = require('../controllers/adminController');
 const router = express.Router();
 
-router.get("/", (req, res) => {});
+router
+  .route('/shipper/')
+  .post(
+    authController.protect,
+    authController.restrictTo('shipper'),
+    loadController.createLoad
+  );
+router
+  .route('/admin/')
+  .post(
+    adminController.protect,
+    adminController.restrictTo('admin'),
+    loadController.createLoad
+  );
 
-router.get("/", (req, res) => {
-  res.send("Get loads!");
-});
-
-router.post("/", (req, res) => {
-  res.send("loads Created!");
-});
-
-router.put("/", (req, res) => {
-  res.send("loads Updated!");
-});
-
-router.put("/", (req, res) => {
-  res.send("loads deleted!");
-});
 module.exports = router;

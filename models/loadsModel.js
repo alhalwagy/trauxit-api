@@ -22,15 +22,6 @@ const loadsSchema = new mongoose.Schema({
   idCarrier: {
     type: mongoose.Schema.ObjectId, // Store as ObjectId
     ref: 'User', // Reference to the User model
-    required: [true, 'Load must belong to Carrier'],
-    validate: {
-      validator: async function (carrier) {
-        // Check if a User with the given id exists
-        const check = await mongoose.model('User').findById(carrier);
-        return check;
-      },
-      message: 'There is no Carrier with this name or Id',
-    },
   },
 
   typeLoads: { type: String, required: [true, 'Load must belong to Type.'] }, // Type of the load
@@ -43,7 +34,7 @@ const loadsSchema = new mongoose.Schema({
     type: String,
     required: [true, 'Load must Have a Address Dropout.'],
   },
-  Weight: { type: String, required: [true, 'Load must Have a Right Weight.'] }, // Weight of the load
+  Weight: { type: Number, required: [true, 'Load must Have a Right Weight.'] }, // Weight of the load
   status: {
     type: String,
     required: [true, 'Load must Have a Status At all time.'], // Status of the load
