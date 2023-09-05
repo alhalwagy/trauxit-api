@@ -20,7 +20,6 @@ const shipperSchema = new mongoose.Schema({
   password: {
     type: String,
     required: [true, 'Shipper must have a Password.'],
-    unique: true,
   },
 
   birthDate: {
