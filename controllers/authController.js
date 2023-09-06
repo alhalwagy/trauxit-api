@@ -113,7 +113,6 @@ exports.protect = catchAsync(async (req, res, next) => {
 
   // Verify the token and get the decoded user ID
   const decoded = await promisify(jwt.verify)(token, process.env.JWT_SECRET);
-
   // Find the user associated with the token
   const freshUser = await User.findById(decoded.id);
 

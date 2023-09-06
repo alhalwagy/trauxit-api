@@ -4,12 +4,18 @@ const adminController = require('../controllers/adminController'); // Import adm
 const router = express.Router();
 
 // Protect all routes defined in this router using the protect middleware
-router.use(adminController.protect);
+
 
 // Define a route for admin signup accessible only by 'head admin' role
 router
   .route('/signup')
-  .post(adminController.restrictTo('head admin'), adminController.SignupAdmins);
+  .post(
+    adminController.protect,
+    adminController.restrictTo('head admin'),
+    adminController.SignupAdmins
+  );
+
+router.route('/login').post(adminController.login);
 
 // Export the router
 module.exports = router;

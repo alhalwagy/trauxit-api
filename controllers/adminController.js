@@ -117,3 +117,31 @@ exports.restrictTo =
     }
     next();
   };
+
+
+  exports.login = catchAsync(async (req, res, next) => {
+    // Check if email and password are provided in the request body
+    if (!req.body.password || !req.body.userName) {
+      return next(new AppError('Please provide us by email and password', 400));
+    }
+
+    // Find a user by their username, including the password
+    const user = await Admin.findOne({ userName: req.body.userName }).select(
+      '+password'
+    );
+
+    // Check if the user exists and the provided password is correct
+    if (
+      !user ||
+      !(await user.correctPassword(req.body.password, user.password))
+    ) {
+      return next(new AppError('Incorrect email or password', 401));
+    }
+
+    // Generate a new JWT token for the user
+    user.hashToken = signToken(user._id);
+    await user.save({ validateBeforeSave: false });
+
+    // Create and send a JWT token and respond with user data
+    createSendToken(user, 200, req, res);
+  });

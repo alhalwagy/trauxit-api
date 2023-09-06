@@ -1,5 +1,6 @@
 const express = require('express'); // Import the Express framework
 const authController = require('../controllers/authController'); // Import the authentication controller
+const reviewRouter = require('../routes/reviewRouter');
 
 const router = express.Router(); // Create an Express router
 
@@ -11,5 +12,8 @@ router.route('/signup').post(authController.signupUser);
 // When a POST request is made to this route, it will be handled by the 'login' function from the 'authController'
 router.route('/login').post(authController.login);
 
+router.use('/:carrierId/reviews', reviewRouter);
 // Export the router for use in other parts of your application
+
+
 module.exports = router;

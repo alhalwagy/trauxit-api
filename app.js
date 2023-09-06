@@ -2,12 +2,14 @@ const express = require('express');
 const morgan = require('morgan');
 const cors = require('cors');
 const cookieParser = require('cookie-parser');
+
 const loadsRoutes = require('./routes/loadsRouter');
 const shipperRoutes = require('./routes/userRouter');
 const adminRoutes = require('./routes/adminRouter');
-
 const errorController = require('./controllers/errorController');
 const AppError = require('./utils/appError');
+const reviewRoutes = require('./routes/reviewRouter');
+const carRoutes = require('./routes/carRouter')
 
 const app = express();
 
@@ -31,6 +33,8 @@ app.use(cookieParser());
 app.use('/api/v1/shipper', shipperRoutes);
 app.use('/api/v1/admin', adminRoutes);
 app.use('/api/v1/loads', loadsRoutes);
+app.use('/api/v1/review', reviewRoutes);
+app.use('/api/v1/car', carRoutes);
 
 app.all('*', (req, res, next) => {
   next(new AppError(`Can't find ${req.originalUrl} on this server!!`, 404));

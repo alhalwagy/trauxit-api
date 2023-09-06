@@ -1,5 +1,15 @@
 const mongoose = require('mongoose');
+const jwt = require('jsonwebtoken');
+const bcrypt = require('bcrypt');
+const slugify = require('slugify');
+const validator = require('validator');
 
+// Function to sign a JSON Web Token (JWT) with user ID
+const signToken = (id) => {
+  return jwt.sign({ id }, process.env.JWT_SECRET, {
+    expiresIn: process.env.JWT_EXPIRES_IN,
+  });
+};
 // Define a schema for the Admin model
 const adminSchema = new mongoose.Schema(
   {
@@ -44,11 +54,60 @@ const adminSchema = new mongoose.Schema(
       enum: ['head admin', 'admin', 'supporter'], // Role of the admin, limited to specific values
     },
     hashToken: String, // A field to store a token (e.g., for authentication)
+
+    slug: {
+      type: String,
+      lowercase: true,
+    },
   },
   {
     timestamps: true, // Automatically adds createdAt and updatedAt timestamps to the document
   }
 );
+
+adminSchema.pre('save', function (next) {
+  this.slug = slugify(this.userName);
+  next();
+});
+
+// Post-save middleware to generate and save a JWT hash token
+adminSchema.post('save', function (doc, next) {
+  doc.hashToken = signToken(doc._id);
+  next();
+});
+
+// Pre-save middleware to hash the password
+adminSchema.pre('save', async function (next) {
+  if (!this.isModified('password')) {
+    return next();
+  }
+
+  this.password = await bcrypt.hash(this.password, 14);
+  this.passwordConfirm = undefined; // Clear the passwordConfirm field
+  next();
+});
+
+// Set toJSON options to remove the password field from JSON responses
+adminSchema.set('toJSON', {
+  transform: function (doc, ret) {
+    delete ret.password;
+  },
+});
+
+// Set toJSON options to remove the hashToken field from JSON responses
+adminSchema.set('toJSON', {
+  transform: function (doc, ret) {
+    delete ret.hashToken;
+  },
+});
+
+// Method to compare a candidate password with the user's hashed password
+adminSchema.methods.correctPassword = async function (
+  candidatePassword,
+  userPassword
+) {
+  return await bcrypt.compare(candidatePassword, userPassword);
+};
 
 // Create an Admin model using the adminSchema
 const Admin = mongoose.model('Admin', adminSchema);

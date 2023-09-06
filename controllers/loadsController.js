@@ -1,31 +1,98 @@
 const Loads = require('../models/loadsModel');
-const Shipper = require('../models/shipperModel');
+const User = require('../models/userModel');
 const AppError = require('../utils/appError');
 const catchAsync = require('../utils/catchAsync');
 
 exports.createLoad = catchAsync(async (req, res, next) => {
-  console.log(req.user.role);
-  if (req.user.role === 'shipper') {
+  if (req.user) {
     const idShipper = req.user.id;
     req.body.idShipper = idShipper;
-    const newLoad = await Loads.create(req.body);
-    res.status(200).json({
+    req.body.status = 'inprogress';
+    const load = await Loads.create(req.body);
+    await load.populate({
+      path: 'idShipper',
+      select: 'fullName userName role address companyName',
+    });
+    return res.status(200).json({
       status: 'success',
       data: {
-        newLoad,
+        load,
       },
     });
   }
 
-  if (req.admin.role === 'admin') {
-    const idShipper = await Shipper.findOne({ userName: req.body.shipperName });
-    req.body.idShipper = idShipper._id;
-    const newLoad = await Loads.create(req.body);
-    res.status(200).json({
+  if (req.admin) {
+    console.log(req.body.shipperName);
+    const idShipper = await User.findOne({ userName: req.body.shipperName });
+
+    req.body.idShipper = idShipper.id;
+    const load = await Loads.create(req.body);
+    await load.populate({
+      path: 'idShipper',
+      select: 'fullName userName role address companyName',
+    });
+    res.status(201).json({
       status: 'success',
       data: {
-        newLoad,
+        load,
       },
     });
   }
+});
+
+exports.getLoadsForShipper = catchAsync(async (req, res, next) => {
+  const loads = await Loads.find({ idShipper: req.user.id });
+  if (loads.length === 0) {
+    return next(new AppError('There is no loads for specified shipper.', 404));
+  }
+  res.status(200).json({
+    status: 'success',
+    length: loads.length,
+    data: {
+      loads,
+    },
+  });
+});
+
+exports.getLoadsForCarrier = catchAsync(async (req, res, next) => {
+  const loads = await Loads.find({ status: 'available' }).populate({
+    path: 'idShipper',
+    select: 'fullName userName role address companyName',
+  });
+
+  if (loads.length === 0) {
+    return next(new AppError('There is no loads available.', 404));
+  }
+  res.status(200).json({
+    status: 'success',
+    length: loads.length,
+    data: {
+      loads,
+    },
+  });
+});
+
+exports.bookingLoads = catchAsync(async (req, res, next) => {
+  const loadCheck = (await Loads.findById(req.params.id)).status;
+  if (loadCheck === 'Booked') {
+    return next(new AppError('This Load Booked'));
+  }
+  const load = await Loads.findByIdAndUpdate(
+    req.params.id,
+    {
+      status: 'Booked',
+      idCarrier: req.user.id,
+    },
+    { new: true, runValidators: false }
+  );
+
+  if (!load) {
+    return next(new AppError('There is no loads for specified Id.', 404));
+  }
+  res.status(200).json({
+    status: 'success',
+    data: {
+      load,
+    },
+  });
 });
