@@ -103,7 +103,7 @@ exports.protect = catchAsync(async (req, res, next) => {
   } else if (req.cookies.jwt) {
     token = req.cookies.jwt;
   }
-
+  
   // If no token is found, return an error
   if (!token) {
     return next(
