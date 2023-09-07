@@ -4,7 +4,7 @@ const authController = require('../controllers/authController');
 const loadController = require('../controllers/loadsController');
 const adminController = require('../controllers/adminController');
 const router = express.Router();
-
+//Route Add & Get Loads From Shipper
 router
   .route('/shipper/')
   .post(
@@ -17,6 +17,7 @@ router
     authController.restrictTo('shipper'),
     loadController.getLoadsForShipper
   );
+//Route Add Loads From Admin
 
 router
   .route('/admin/')
@@ -25,6 +26,7 @@ router
     adminController.restrictTo('admin'),
     loadController.createLoad
   );
+//Route Get Loads From Carrier
 
 router
   .route('/carrier/')
@@ -33,6 +35,8 @@ router
     authController.restrictTo('carrier'),
     loadController.getLoadsForCarrier
   );
+
+//Route Book Loads From Carrier
 
 router
   .route('/booking/:id')

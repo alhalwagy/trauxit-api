@@ -3,6 +3,7 @@ const authController = require('../controllers/authController'); // Import the a
 const reviewController = require('../controllers/reviewController');
 const router = express.Router({ mergeParams: true }); // Create an Express router
 
+//Route to Add review from shipper to carrier
 router
   .route('/')
   .post(
