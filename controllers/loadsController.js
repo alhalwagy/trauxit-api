@@ -332,22 +332,28 @@ exports.updateLoadsToOnRoad = catchAsync(async (req, res, next) => {
 exports.updateLoadsToCanceled = catchAsync(async (req, res, next) => {
   const load = await Loads.findById(req.params.id);
 
-  if (load.status === 'available' || load.status === 'inprogress') {
-    load.status = 'canceled';
-    load.save({ validateBeforeSave: false });
-    res.status(200).json({
-      status: 'success',
-      data: {
-        load,
-      },
-    });
+  if ((load.idShipper).toString() === req.user.id) {
+      console.log(load.idShipper.toString());
+      console.log(req.user.id);
+    if (load.status === 'available' || load.status === 'inprogress') {
+      load.status = 'canceled';
+      load.save({ validateBeforeSave: false });
+      res.status(200).json({
+        status: 'success',
+        data: {
+          load,
+        },
+      });
+    } else {
+      return next(
+        new AppError(
+          'You can not update the status of this load right now. because it is in process to cancel it must take a ticket to our supporter. ',
+          401
+        )
+      );
+    }
   } else {
-    return next(
-      new AppError(
-        'You can not update the status of this load right now. because it is in process to cancel it must take a ticket to our supporter. ',
-        401
-      )
-    );
+    return next(new AppError('This Load is Not for You. ', 401));
   }
 });
 
