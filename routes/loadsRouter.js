@@ -84,12 +84,12 @@ router
     loadController.updateLoadsToCanceled
   );
 
-// router
-//   .route('/:id/update-status-to-completed')
-//   .patch(
-//     authController.protect,
-//     authController.restrictTo('shipper'),
-//     loadController.updateLoadsToCanceled
-//   );
+router
+  .route('/:id/update-status-to-completed/:latlng/unit/:unit')
+  .patch(
+    authController.protect,
+    authController.restrictTo('carrier'),
+    loadController.updateLoadsToCompleted
+  );
 
 module.exports = router;

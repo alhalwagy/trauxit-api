@@ -155,7 +155,7 @@ exports.getLoadWithin = catchAsync(async (req, res, next) => {
     },
   });
 });
-
+//Get Distances between all points in DB and Specified Point
 exports.getDistances = catchAsync(async (req, res, next) => {
   const { latlng, unit } = req.params;
   const [lat, lng] = latlng.split(',');
@@ -193,6 +193,27 @@ exports.getDistances = catchAsync(async (req, res, next) => {
   });
 });
 
+// exports.updateLoadsToAvailable = catchAsync(async (req, res, next) => {
+//   const load = await Loads.findByIdAndUpdate(
+//     req.params.id,
+//     {
+//       status: 'available',
+//     },
+//     {
+//       new: true,
+//       runValidators: false,
+//     }
+//   );
+
+//   res.status(200).json({
+//     status: 'success',
+//     data: {
+//       load,
+//     },
+//   });
+// });
+
+//Update Load Status To Available
 exports.updateLoadsToAvailable = catchAsync(async (req, res, next) => {
   const load = await Loads.findByIdAndUpdate(
     req.params.id,
@@ -213,26 +234,7 @@ exports.updateLoadsToAvailable = catchAsync(async (req, res, next) => {
   });
 });
 
-exports.updateLoadsToAvailable = catchAsync(async (req, res, next) => {
-  const load = await Loads.findByIdAndUpdate(
-    req.params.id,
-    {
-      status: 'available',
-    },
-    {
-      new: true,
-      runValidators: false,
-    }
-  );
-
-  res.status(200).json({
-    status: 'success',
-    data: {
-      load,
-    },
-  });
-});
-
+//Update Load Status To In CheckSP
 exports.updateLoadsToInchecksp = catchAsync(async (req, res, next) => {
   const load = await Loads.findByIdAndUpdate(
     req.params.id,
@@ -253,6 +255,7 @@ exports.updateLoadsToInchecksp = catchAsync(async (req, res, next) => {
     },
   });
 });
+//Update Load Status To On Road
 
 exports.updateLoadsToOnRoad = catchAsync(async (req, res, next) => {
   const { latlng, unit } = req.params;
@@ -328,13 +331,13 @@ exports.updateLoadsToOnRoad = catchAsync(async (req, res, next) => {
     });
   }
 });
-
+//Update Load Status To canceled
 exports.updateLoadsToCanceled = catchAsync(async (req, res, next) => {
   const load = await Loads.findById(req.params.id);
 
-  if ((load.idShipper).toString() === req.user.id) {
-      console.log(load.idShipper.toString());
-      console.log(req.user.id);
+  if (load.idShipper.toString() === req.user.id) {
+    console.log(load.idShipper.toString());
+    console.log(req.user.id);
     if (load.status === 'available' || load.status === 'inprogress') {
       load.status = 'canceled';
       load.save({ validateBeforeSave: false });
@@ -357,6 +360,7 @@ exports.updateLoadsToCanceled = catchAsync(async (req, res, next) => {
   }
 });
 
+//Update Load Status To Completed
 exports.updateLoadsToCompleted = catchAsync(async (req, res, next) => {
   const { latlng, unit } = req.params;
   const [lat, lng] = latlng.split(',');
