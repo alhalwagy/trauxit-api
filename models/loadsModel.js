@@ -27,26 +27,46 @@ const loadsSchema = new mongoose.Schema(
 
     typeLoads: { type: String, required: [true, 'Load must belong to Type.'] }, // Type of the load
     nameLoads: { type: String, required: [true, 'Load must Have a Name.'] }, // Name of the load
-    PickupLocation: {
-      type: String,
-      required: [true, 'Load must Have a Address Pickup.'],
-    },
-    DropoutLocation: {
-      type: String,
-      required: [true, 'Load must Have a Address Dropout.'],
-    },
     Weight: {
       type: Number,
       required: [true, 'Load must Have a Right Weight.'],
     }, // Weight of the load
     status: {
       type: String,
-      enum: ['available', 'inroads', 'canceled', 'inprogress', 'booked','completed'],
+      enum: [
+        'available',
+        'inroads',
+        'canceled',
+        'inprogress',
+        'booked',
+        'completed',
+        "inchecksp"
+      ],
       required: [true, 'Load must Have a Status At all time.'], // Status of the load
       default: 'inprogress',
     },
     priceLoads: { type: Number, required: [true, 'Load must Have a Name.'] }, // Price of the load
     description: { type: String }, // Description of the load
+    PickupLocation: {
+      type: {
+        type: String,
+        enum: ['Point'],
+        default: 'Point',
+      },
+      coordinates: [Number],
+      address: String,
+      description: String,
+    },
+    DropoutLocation: {
+      type: {
+        type: String,
+        enum: ['Point'],
+        default: 'Point',
+      },
+      coordinates: [Number],
+      address: String,
+      description: String,
+    },
   },
   {
     timestamps: true,
@@ -61,7 +81,13 @@ loadsSchema.virtual('shipper', {
   localField: '_id',
 });
 
+loadsSchema.index({ PickupLocation: '2dsphere' });
+
 // Create a Loads model using the loadsSchema
 const Loads = mongoose.model('Loads', loadsSchema);
 
 module.exports = Loads; // Export the Loads model
+
+
+
+

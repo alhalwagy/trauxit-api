@@ -15,7 +15,6 @@ const signToken = (id) => {
 // Function to create and send a JWT token in a cookie and respond with user data
 const createSendToken = (user, statusCode, req, res) => {
   const token = signToken(user._id);
-
   // Define cookie options
   const cookieOptions = {
     expires: new Date(
@@ -103,7 +102,6 @@ exports.protect = catchAsync(async (req, res, next) => {
   } else if (req.cookies.jwt) {
     token = req.cookies.jwt;
   }
-  
   // If no token is found, return an error
   if (!token) {
     return next(
