@@ -74,7 +74,7 @@ exports.protect = catchAsync(async (req, res, next) => {
   // If no token is found, return an error
   if (!token) {
     return next(
-      new AppError('You are not logged in please log in to get access', 401)
+      new AppError('You are not logged in please log in to get access', 200)
     );
   }
 
@@ -145,3 +145,5 @@ exports.restrictTo =
     // Create and send a JWT token and respond with user data
     createSendToken(user, 200, req, res);
   });
+
+

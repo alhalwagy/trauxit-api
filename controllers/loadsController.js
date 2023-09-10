@@ -123,14 +123,15 @@ exports.bookingLoads = catchAsync(async (req, res, next) => {
   if (!load) {
     return next(new AppError('There is no loads for specified Id.', 404));
   }
-
+  req.load = load;
+  next();
   // Send a JSON response with the updated load data
-  res.status(200).json({
-    status: 'success',
-    data: {
-      load,
-    },
-  });
+  // res.status(200).json({
+  //   status: 'success',
+  //   data: {
+  //     load,
+  //   },
+  // });
 });
 
 exports.getLoadWithin = catchAsync(async (req, res, next) => {
@@ -435,3 +436,73 @@ exports.updateLoadsToCompleted = catchAsync(async (req, res, next) => {
     });
   }
 });
+//For Admin
+exports.getAllLoads = catchAsync(async (req, res, next) => {
+  const loads = await Loads.find({});
+  if (loads.length === 0) {
+    return next(new AppError('No loads available', 404));
+  }
+  res.status(200).json({
+    status: 'success',
+    result: loads.length,
+    data: {
+      loads,
+    },
+  });
+});
+
+//For Admin
+exports.updateLoads = catchAsync(async (req, res, next) => {
+  const load = await Loads.findByIdAndUpdate(req.params.id, req.body, {
+    new: true,
+    runValidators: false,
+  });
+  if (!load) {
+    return next(new AppError('Not Found This Load', 404));
+  }
+  res.status(200).json({
+    status: 'success',
+    data: {
+      load,
+    },
+  });
+});
+
+//For Admin
+exports.getLoad = catchAsync(async (req, res, next) => {
+  const load = await Loads.findById(req.params.id);
+  if (!load) {
+    return next(new AppError('Not Found This Load', 404));
+  }
+  res.status(200).json({
+    status: 'success',
+    data: {
+      load,
+    },
+  });
+});
+//For Admin
+exports.deleteLoad = catchAsync(async (req, res, next) => {
+  // Check if the load is canceled.
+  const checkLoad = await Loads.findById(req.params.id);
+  if (!(checkLoad.status === 'canceled')) {
+    // Return an error if the load is not canceled.
+    return next(
+      new AppError('This Load Can not deleted. it is not canceled.', 404)
+    );
+  }
+
+  // Find the load by ID and delete it.
+  const load = await Loads.findByIdAndDelete(req.params.id);
+  if (!load) {
+    // Return an error if the load is not found.
+    return next(new AppError('Not Found This Load', 404));
+  }
+
+  // Return a success message.
+  res.status(200).json({
+    status: 'success',
+  });
+});
+
+

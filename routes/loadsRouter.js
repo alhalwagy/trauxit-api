@@ -94,4 +94,30 @@ router
     loadController.updateLoadsToCompleted
   );
 
+router
+  .route('/')
+  .get(
+    adminController.protect,
+    adminController.restrictTo('admin'),
+    loadController.getAllLoads
+  );
+
+router
+  .route('/:id')
+  .patch(
+    adminController.protect,
+    adminController.restrictTo('admin'),
+    loadController.updateLoads
+  )
+  .get(
+    adminController.protect,
+    adminController.restrictTo('admin'),
+    loadController.getLoad
+  )
+  .delete(
+    adminController.protect,
+    adminController.restrictTo('admin'),
+    loadController.deleteLoad
+  );
+
 module.exports = router;

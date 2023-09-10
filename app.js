@@ -4,16 +4,19 @@ const cors = require('cors');
 const cookieParser = require('cookie-parser');
 
 const loadsRoutes = require('./routes/loadsRouter');
-const shipperRoutes = require('./routes/userRouter');
+const userRoutes = require('./routes/userRouter');
 const adminRoutes = require('./routes/adminRouter');
 const errorController = require('./controllers/errorController');
 const AppError = require('./utils/appError');
 const reviewRoutes = require('./routes/reviewRouter');
-const carRoutes = require('./routes/carRouter')
+const carRoutes = require('./routes/carRouter');
+const carrierRoutes = require('./routes/carrierRouter');
+const shipperRoutes = require('./routes/shipperRouter');
 
 const app = express();
 
 app.use(express.json({}));
+app.use(cors());
 //Implement CORS
 // app.use(cors());
 
@@ -31,6 +34,8 @@ app.use(cookieParser());
 
 // app.use('/loads', loadsRoutes);
 app.use('/api/v1/shipper', shipperRoutes);
+app.use('/api/v1/carrier', carrierRoutes);
+app.use('/api/v1/user', userRoutes);
 app.use('/api/v1/admin', adminRoutes);
 app.use('/api/v1/loads', loadsRoutes);
 app.use('/api/v1/review', reviewRoutes);
