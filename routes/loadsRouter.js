@@ -3,6 +3,7 @@ const express = require('express');
 const authController = require('../controllers/authController');
 const loadController = require('../controllers/loadsController');
 const adminController = require('../controllers/adminController');
+const notificationController = require('../controllers/notificationController');
 const router = express.Router();
 //Route Add & Get Loads From Shipper
 router
@@ -43,7 +44,8 @@ router
   .patch(
     authController.protect,
     authController.restrictTo('shipper'),
-    loadController.bookingLoads
+    loadController.bookingLoads,
+    notificationController.createNotification
   );
 
 router
