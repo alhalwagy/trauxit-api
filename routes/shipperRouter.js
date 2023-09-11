@@ -2,6 +2,7 @@ const express = require('express');
 
 const shipperController = require('../controllers/shipperController');
 const adminController = require('../controllers/adminController');
+const authController = require('../controllers/authController');
 
 const router = express.Router();
 
@@ -34,6 +35,14 @@ router
     adminController.protect,
     adminController.restrictTo('admin'),
     shipperController.deleteShipper
+  );
+
+router
+  .route('/:idload/createshipment/unit/:unit')
+  .post(
+    authController.protect,
+    authController.restrictTo('shipper'),
+    shipperController.createShipmentFromAToB
   );
 
 module.exports = router;

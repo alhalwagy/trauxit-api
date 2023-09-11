@@ -43,7 +43,7 @@ router
   .route('/booking/:id')
   .patch(
     authController.protect,
-    authController.restrictTo('shipper'),
+    authController.restrictTo('carrier'),
     loadController.bookingLoads,
     notificationController.createNotification
   );

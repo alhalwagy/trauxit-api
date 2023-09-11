@@ -3,6 +3,8 @@ const bcrypt = require('bcrypt');
 const AppError = require('../utils/appError'); // Import custom error handling utility
 const User = require('../models/userModel'); // Import the User model
 const catchAsync = require('../utils/catchAsync');
+const Loads = require('../models/loadsModel');
+const axios = require('axios');
 
 exports.getAllShippers = catchAsync(async (req, res, next) => {
   const shippers = await User.find({ role: 'shipper' });
@@ -83,3 +85,63 @@ exports.createShipper = catchAsync(async (req, res, next) => {
     },
   });
 });
+
+exports.createShipmentFromAToB = catchAsync(async (req, res, next) => {
+  const load = await Loads.findById(req.params.idload);
+  const specifiedPointCoordinates = load.DropoutLocation.coordinates; // Assuming PickupLocation is the correct field name
+  const userCoordinates = load.PickupLocation.coordinates;
+  const unit = 'km';
+  const multiplier = unit === 'mi' ? 0.000621371192 : 0.001;
+
+  // Replace 'YOUR_API_KEY' with your actual TomTom API key
+  const apiKey = process.env.API_KEY_TOMTOM;
+
+  // Coordinates of the two points
+  const point1 = {
+    lat: specifiedPointCoordinates[0],
+    lon: specifiedPointCoordinates[1],
+  };
+  const point2 = { lat: userCoordinates[0], lon: userCoordinates[1] };
+
+  // TomTom API endpoint for calculating distance
+  const apiUrl = `https://api.tomtom.com/routing/1/calculateRoute/${point1.lat},${point1.lon}:${point2.lat},${point2.lon}/json`;
+
+  // Make the API request
+  axios
+    .get(apiUrl, {
+      params: {
+        key: apiKey,
+      },
+    })
+    .then((response) => {
+      if (response.status > 200) {
+        return next(
+          new AppError(
+            'Failed to retrieve distance. Check your coordinates.',
+            404
+          )
+        );
+      }
+      const data = response.data;
+      // Extract the distance in meters from the response
+      const distanceInMeters = data.routes[0].summary.lengthInMeters;
+      // Convert the distance to kilometers
+      const distanceInKilometers = distanceInMeters / 1000;
+      const distance = distanceInKilometers.toFixed(2);
+      let priceLoads = distance * 1.5;
+      priceLoads = priceLoads.toFixed(2);
+      load.priceLoads = priceLoads;
+      load.shipmentDistance = distance;
+      load.save({ validateBeforeSave: false });
+
+
+      res.status(200).json({
+        status: 'success',
+        data: {
+          load,
+          distance,
+        },
+      });
+    });
+});
+

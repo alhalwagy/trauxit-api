@@ -1,7 +1,7 @@
 const express = require('express');
 const adminController = require('../controllers/adminController'); // Import admin controller
 const carrierController = require('../controllers/carrierController');
-
+const authController = require('../controllers/authController');
 const router = express.Router();
 
 router
@@ -33,6 +33,14 @@ router
     adminController.protect,
     adminController.restrictTo('admin'),
     carrierController.deleteCarriers
+  );
+
+router
+  .route('/:idload/calcdistancetoshoping/:latlng')
+  .patch(
+    authController.protect,
+    authController.restrictTo('carrier'),
+    carrierController.calcDistFromCarrierToShopping
   );
 
 module.exports = router;

@@ -38,14 +38,14 @@ const loadsSchema = new mongoose.Schema(
         'inroads',
         'canceled',
         'inprogress',
-        'booked',
+        'Booked',
         'completed',
-        "inchecksp"
+        'inchecksp',
       ],
       required: [true, 'Load must Have a Status At all time.'], // Status of the load
       default: 'inprogress',
     },
-    priceLoads: { type: Number, required: [true, 'Load must Have a Name.'] }, // Price of the load
+    priceLoads: { type: Number }, // Price of the load
     description: { type: String }, // Description of the load
     PickupLocation: {
       type: {
@@ -67,6 +67,7 @@ const loadsSchema = new mongoose.Schema(
       address: String,
       description: String,
     },
+    shipmentDistance: Number,
   },
   {
     timestamps: true,
@@ -87,7 +88,3 @@ loadsSchema.index({ PickupLocation: '2dsphere' });
 const Loads = mongoose.model('Loads', loadsSchema);
 
 module.exports = Loads; // Export the Loads model
-
-
-
-

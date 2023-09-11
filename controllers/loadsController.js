@@ -256,58 +256,11 @@ exports.updateLoadsToInchecksp = catchAsync(async (req, res, next) => {
     },
   });
 });
+
 //Update Load Status To On Road
 
 exports.updateLoadsToOnRoad = catchAsync(async (req, res, next) => {
-  const { latlng, unit } = req.params;
-  const [lat, lng] = latlng.split(',');
-
-  const multiplier = unit === 'mi' ? 0.000621371192 : 0.001;
-  if (!lat || !lng) {
-    next(
-      new AppError('There is no latitude or longitude in the request!', 400)
-    );
-  }
-
-  // Convert lat and lng to numbers
-  const userCoordinates = [parseFloat(lng), parseFloat(lat)];
-
-  const load = await Loads.findById(req.params.id);
-  const specifiedPointCoordinates = load.PickupLocation.coordinates; // Assuming PickupLocation is the correct field name
-
-  // Calculate the distance between userCoordinates and specifiedPointCoordinates
-  const distance = calculateDistance(
-    userCoordinates,
-    specifiedPointCoordinates,
-    multiplier
-  );
-
-  // The 'distance' variable now contains the distance between the requested point and the specified point in your DB
-
-  // Handle errors (e.g., if the specified ID is not found)
-
-  // Function to calculate distance using Haversine formula
-  function calculateDistance(coord1, coord2, multiplier) {
-    const [lat1, lon1] = coord1;
-    const [lat2, lon2] = coord2;
-
-    const radlat1 = (Math.PI * lat1) / 180;
-    const radlat2 = (Math.PI * lat2) / 180;
-    const theta = lon1 - lon2;
-    const radtheta = (Math.PI * theta) / 180;
-
-    let dist =
-      Math.sin(radlat1) * Math.sin(radlat2) +
-      Math.cos(radlat1) * Math.cos(radlat2) * Math.cos(radtheta);
-
-    dist = Math.acos(dist);
-    dist = (dist * 180) / Math.PI;
-    dist = dist * 60 * 1.1515;
-
-    return dist * multiplier;
-  }
-  console.log(distance);
-  if (distance <= 1) {
+  if (req.user.currentDistance < 1) {
     const load = await Loads.findByIdAndUpdate(
       req.params.id,
       {
@@ -318,7 +271,6 @@ exports.updateLoadsToOnRoad = catchAsync(async (req, res, next) => {
         runValidators: false,
       }
     );
-
     res.status(200).json({
       status: 'success',
       data: {
@@ -326,12 +278,13 @@ exports.updateLoadsToOnRoad = catchAsync(async (req, res, next) => {
       },
     });
   } else {
-    res.status(200).json({
-      status: 'success',
-      message: `You can't update the load to on road. You stile have distance(${distance}) from it.`,
+    res.status(400).json({
+      status: 'fail',
+      message: `You can't update the load to on road. You stile have distance(${req.user.currentDistance}) from it.`,
     });
   }
 });
+
 //Update Load Status To canceled
 exports.updateLoadsToCanceled = catchAsync(async (req, res, next) => {
   const load = await Loads.findById(req.params.id);
@@ -363,55 +316,8 @@ exports.updateLoadsToCanceled = catchAsync(async (req, res, next) => {
 
 //Update Load Status To Completed
 exports.updateLoadsToCompleted = catchAsync(async (req, res, next) => {
-  const { latlng, unit } = req.params;
-  const [lat, lng] = latlng.split(',');
-
-  const multiplier = unit === 'mi' ? 0.000621371192 : 0.001;
-  if (!lat || !lng) {
-    next(
-      new AppError('There is no latitude or longitude in the request!', 400)
-    );
-  }
-
-  // Convert lat and lng to numbers
-  const userCoordinates = [parseFloat(lng), parseFloat(lat)];
-
-  const load = await Loads.findById(req.params.id);
-  const specifiedPointCoordinates = load.DropoutLocation.coordinates; // Assuming PickupLocation is the correct field name
-
-  // Calculate the distance between userCoordinates and specifiedPointCoordinates
-  const distance = calculateDistance(
-    userCoordinates,
-    specifiedPointCoordinates,
-    multiplier
-  );
-
-  // The 'distance' variable now contains the distance between the requested point and the specified point in your DB
-
-  // Handle errors (e.g., if the specified ID is not found)
-
-  // Function to calculate distance using Haversine formula
-  function calculateDistance(coord1, coord2, multiplier) {
-    const [lat1, lon1] = coord1;
-    const [lat2, lon2] = coord2;
-
-    const radlat1 = (Math.PI * lat1) / 180;
-    const radlat2 = (Math.PI * lat2) / 180;
-    const theta = lon1 - lon2;
-    const radtheta = (Math.PI * theta) / 180;
-
-    let dist =
-      Math.sin(radlat1) * Math.sin(radlat2) +
-      Math.cos(radlat1) * Math.cos(radlat2) * Math.cos(radtheta);
-
-    dist = Math.acos(dist);
-    dist = (dist * 180) / Math.PI;
-    dist = dist * 60 * 1.1515;
-
-    return dist * multiplier;
-  }
-  console.log(distance);
-  if (distance <= 1) {
+  req.user.currentDistance = 0;
+  if (req.user.calculateDistance < 1) {
     const load = await Loads.findByIdAndUpdate(
       req.params.id,
       {
@@ -429,13 +335,18 @@ exports.updateLoadsToCompleted = catchAsync(async (req, res, next) => {
         load,
       },
     });
+
+    req.user.currentDistance = 0;
+    await req.user.save({});
+    console.log(req.user.currentDistance);
   } else {
-    res.status(200).json({
-      status: 'success',
-      message: `You can't update the load to on road. You stile have distance(${distance}) from it.`,
+    res.status(400).json({
+      status: 'fail',
+      message: `You can't update the load to on road. You stile have distance(${req.user.currentDistance}) from it.`,
     });
   }
 });
+
 //For Admin
 exports.getAllLoads = catchAsync(async (req, res, next) => {
   const loads = await Loads.find({});
@@ -504,5 +415,3 @@ exports.deleteLoad = catchAsync(async (req, res, next) => {
     status: 'success',
   });
 });
-
-

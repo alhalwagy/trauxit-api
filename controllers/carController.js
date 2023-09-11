@@ -1,5 +1,6 @@
 // Import necessary modules and dependencies
 const Car = require('../models/carModel'); // Import the Car model
+const User = require('../models/userModel');
 const AppError = require('../utils/appError'); // Import an error handling utility
 const catchAsync = require('../utils/catchAsync'); // Import an async error handling utility
 
@@ -58,7 +59,7 @@ exports.deleteCar = catchAsync(async (req, res, next) => {
 });
 
 exports.createCarForAdmin = catchAsync(async (req, res, next) => {
-  const carrierCar = await Car.findOne({ name: req.body.userName });
+  const carrierCar = await User.findOne({ userName: req.body.userName });
   req.body.carrierId = carrierCar._id;
 
   const car = await Car.create(req.body);
@@ -102,3 +103,4 @@ exports.getCar = catchAsync(async (req, res, next) => {
     },
   });
 });
+

@@ -71,6 +71,15 @@ const userSchema = new mongoose.Schema(
       type: String,
       lowercase: true, // Store a lowercase slug based on the username
     },
+    currentDistance: Number,
+    currentLocation: {
+      type: {
+        type: String,
+        enum: ['Point'],
+        default: 'Point',
+      },
+      coordinates: [Number],
+    },
   },
   {
     timestamps: true, // Automatically adds createdAt and updatedAt timestamps to the document
