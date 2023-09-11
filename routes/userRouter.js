@@ -15,5 +15,4 @@ router.route('/login').post(authController.login);
 router.use('/:carrierId/reviews', reviewRouter);
 // Export the router for use in other parts of your application
 
-
 module.exports = router;

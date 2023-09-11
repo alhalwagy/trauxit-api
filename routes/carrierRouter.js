@@ -10,6 +10,11 @@ router
     adminController.protect,
     adminController.restrictTo('admin'),
     carrierController.getAllCarriers
+  )
+  .post(
+    adminController.protect,
+    adminController.restrictTo('admin'),
+    carrierController.createCarrier
   );
 
 router

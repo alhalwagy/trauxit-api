@@ -25,3 +25,80 @@ exports.createCar = catchAsync(async (req, res, nex) => {
     },
   });
 });
+
+exports.updateCar = catchAsync(async (req, res, next) => {
+  const car = await Car.findByIdAndUpdate(req.params.id, req.body, {
+    new: true,
+    runValidators: false,
+  });
+  if (!car) {
+    // Return an error if the Carriers is not found.
+    return next(new AppError('Not Found This car', 404));
+  }
+  res.status(201).json({
+    status: 'success',
+    data: {
+      car, // Include the newly created car data in the response
+    },
+  });
+});
+
+exports.deleteCar = catchAsync(async (req, res, next) => {
+  const car = await Car.findByIdAndDelete(req.params.id);
+  if (!car) {
+    // Return an error if the Carriers is not found.
+    return next(new AppError('Not Found This car', 404));
+  }
+  res.status(201).json({
+    status: 'success',
+    data: {
+      car, // Include the newly created car data in the response
+    },
+  });
+});
+
+exports.createCarForAdmin = catchAsync(async (req, res, next) => {
+  const carrierCar = await Car.findOne({ name: req.body.userName });
+  req.body.carrierId = carrierCar._id;
+
+  const car = await Car.create(req.body);
+
+  res.status(201).json({
+    status: 'success',
+    data: {
+      car, // Include the newly created car data in the response
+    },
+  });
+});
+
+exports.getAllCars = catchAsync(async (req, res, next) => {
+  const cars = await Car.find({}).populate({
+    path: 'carrierId',
+    select: 'fullName userName role address companyName',
+  });
+  if (!cars.length === 0) {
+    // Return an error if the Carriers is not found.
+    return next(new AppError('No cars available', 404));
+  }
+  res.status(200).json({
+    status: 'success',
+    result: cars.length,
+    data: {
+      cars,
+    },
+  });
+});
+
+exports.getCar = catchAsync(async (req, res, next) => {
+  const car = await Car.findById(req.params.id);
+  if (!car) {
+    // Return an error if the Carriers is not found.
+    return next(new AppError('Not Found This car', 404));
+  }
+  res.status(200).json({
+    status: 'success',
+    data: {
+      car,
+    },
+  });
+});

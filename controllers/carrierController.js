@@ -71,3 +71,15 @@ exports.deleteCarriers = catchAsync(async (req, res, next) => {
     status: 'success',
   });
 });
+
+exports.createCarrier = catchAsync(async (req, res, next) => {
+  req.body.role = 'carrier';
+  const carrier = await User.create(req.body);
+
+  res.status(201).json({
+    status: 'success',
+    data: {
+      carrier,
+    },
+  });
+});
