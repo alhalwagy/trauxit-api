@@ -12,6 +12,7 @@ const reviewRoutes = require('./routes/reviewRouter');
 const carRoutes = require('./routes/carRouter');
 const carrierRoutes = require('./routes/carrierRouter');
 const shipperRoutes = require('./routes/shipperRouter');
+const ticketRoutes = require('./routes/ticketRouter')
 
 const app = express();
 
@@ -40,6 +41,7 @@ app.use('/api/v1/admin', adminRoutes);
 app.use('/api/v1/loads', loadsRoutes);
 app.use('/api/v1/review', reviewRoutes);
 app.use('/api/v1/car', carRoutes);
+app.use('/api/v1/ticket', ticketRoutes);
 
 app.all('*', (req, res, next) => {
   next(new AppError(`Can't find ${req.originalUrl} on this server!!`, 404));

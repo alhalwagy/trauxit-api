@@ -316,7 +316,6 @@ exports.updateLoadsToCanceled = catchAsync(async (req, res, next) => {
 
 //Update Load Status To Completed
 exports.updateLoadsToCompleted = catchAsync(async (req, res, next) => {
-  req.user.currentDistance = 0;
   if (req.user.calculateDistance < 1) {
     const load = await Loads.findByIdAndUpdate(
       req.params.id,

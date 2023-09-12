@@ -5,6 +5,7 @@ const loadController = require('../controllers/loadsController');
 const adminController = require('../controllers/adminController');
 const notificationController = require('../controllers/notificationController');
 const router = express.Router();
+
 //Route Add & Get Loads From Shipper
 router
   .route('/shipper/')
@@ -71,7 +72,7 @@ router
   );
 
 router
-  .route('/:id/update-status-to-onroad/:latlng/unit/:unit')
+  .route('/:id/update-status-to-onroad')
   .patch(
     authController.protect,
     authController.restrictTo('carrier'),
@@ -87,7 +88,7 @@ router
   );
 
 router
-  .route('/:id/update-status-to-completed/:latlng/unit/:unit')
+  .route('/:id/update-status-to-completed')
   .patch(
     authController.protect,
     authController.restrictTo('carrier'),
