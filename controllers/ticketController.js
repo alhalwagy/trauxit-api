@@ -55,7 +55,7 @@ exports.replyTicketByAdmin = catchAsync(async (req, res, next) => {
 });
 
 exports.getAllTechTickets = catchAsync(async (req, res, next) => {
-  const tickets = await Ticket.find({ type: 'technical' });
+  const tickets = await Ticket.find({});
 
   res.status(200).json({
     status: 'success',

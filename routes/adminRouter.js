@@ -4,8 +4,6 @@ const loadController = require('../controllers/loadsController');
 
 const router = express.Router();
 
-
-
 // Define a route for admin signup accessible only by 'head admin' role
 // Protect all routes defined in this router using the protect middleware
 
@@ -18,6 +16,7 @@ router
   );
 
 router.route('/login').post(adminController.login);
+router.route('/logout').post(adminController.protect, adminController.logout);
 
 // Export the router
 module.exports = router;

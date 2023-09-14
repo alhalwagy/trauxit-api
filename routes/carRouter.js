@@ -9,7 +9,7 @@ router
   .route('/')
   .post(
     authController.protect,
-    authController.restrictTo('carrier'),
+    authController.restrictTo('carrier', 'small-carrier'),
     carController.createCar
   )
   .get(

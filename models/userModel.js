@@ -19,9 +19,11 @@ const userSchema = new mongoose.Schema(
       required: [true, 'User Must Have A Full Name.'], // Full name of the user, required field
     },
     ID_card_number: {
-      type: Number,
+      type: String,
       required: true,
       unique: true, // Ensures that each ID card number is unique in the database
+      // minlength: 14,
+      // maxlength: 14,
     },
     userName: {
       type: String,
@@ -51,19 +53,16 @@ const userSchema = new mongoose.Schema(
       type: Date,
       required: [true, 'User must have a birth Date.'], // Birth date of the user, required field
     },
-    companyName: {
-      type: String,
-    },
+  
     address: { type: String, required: [true, 'Address is required.'] }, // Address field, required
-    location_address: String,
     rating: Number, // User's rating
 
     role: {
       required: [true, 'User must have a role'], // User's role, required field
       type: String,
-      enum: ['shipper', 'carrier'], // User's role is limited to specific values
+      enum: ['shipper', 'carrier', 'small-carrier'], // User's role is limited to specific values ('shipper','carrier','small-carrier')
     },
-
+    // To check the given token same as database token
     hashToken: {
       type: String,
     },
@@ -80,6 +79,15 @@ const userSchema = new mongoose.Schema(
       },
       coordinates: [Number],
     },
+    email: {
+      type: String,
+      required: [true, 'A user must have a email'],
+      unique: true,
+      lowercase: true,
+      validate: [validator.isEmail, 'please provide a valid email'],
+    },
+    phoneNumber: String,
+    
   },
   {
     timestamps: true, // Automatically adds createdAt and updatedAt timestamps to the document

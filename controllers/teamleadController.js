@@ -1,9 +1,9 @@
 const { promisify } = require('util');
-const jwt = require('jsonwebtoken'); // Import JWT for token handling
-
+const jwt = require('jsonwebtoken');
 const User = require('../models/userModel'); // Import the User model
 const AppError = require('../utils/appError'); // Import custom error handling utility
 const catchAsync = require('../utils/catchAsync'); // Import utility for catching async errors
+const Team = require('../models/teamleadModel');
 
 // Function to sign a JSON Web Token (JWT) with user ID
 const signToken = (id) => {
@@ -13,8 +13,9 @@ const signToken = (id) => {
 };
 
 // Function to create and send a JWT token in a cookie and respond with user data
-const createSendToken = (user, statusCode, req, res) => {
-  const token = signToken(user._id);
+const createSendToken = (team, statusCode, req, res) => {
+  const token = signToken(team._id);
+
   // Define cookie options
   const cookieOptions = {
     expires: new Date(
@@ -27,39 +28,37 @@ const createSendToken = (user, statusCode, req, res) => {
   // Set the JWT token in a cookie
   res.cookie('jwt', token, cookieOptions);
 
-  // Remove the password from the user object before sending it to the client
-  user.password = undefined;
+  // Remove the password from the Team object before sending it to the client
+  team.password = undefined;
 
-  // Respond with the JWT token and user data
+  // Respond with the JWT token and Team data
   res.status(statusCode).json({
     status: 'success',
     token,
     data: {
-      user,
+      team,
     },
   });
 };
 
-// Controller function for user signup
-exports.signupUser = catchAsync(async (req, res, next) => {
-  // Create a new user based on request data
-  const newShipper = await User.create({
-    role: req.body.role,
+// Controller function for Team signup
+exports.signup = catchAsync(async (req, res, next) => {
+  // Create a new Team based on request data
+  const newTeam = await Team.create({
     fullName: req.body.fullName,
-    userName: req.body.userName,
-    ID_card_number: req.body.ID_card_number,
+    team_id: req.body.team_id,
     password: req.body.password,
-    birthDate: req.body.birthDate,
     address: req.body.address,
-    passwordConfirm: req.body.passwordConfirm,
     email: req.body.email,
+    passwordConfirm: req.body.passwordConfirm,
+    phoneNumber: req.body.phoneNumber,
+    teamName: req.body.teamName,
   });
 
-  // Create and send a JWT token and respond with user data
-  createSendToken(newShipper, 201, req, res);
+  // Create and send a JWT token and respond with Team data
+  createSendToken(newTeam, 201, req, res);
 });
 
-// Controller function for user login
 exports.login = catchAsync(async (req, res, next) => {
   // Check if email and password are provided in the request body
   if (!req.body.password || !req.body.email) {
@@ -67,27 +66,42 @@ exports.login = catchAsync(async (req, res, next) => {
   }
 
   // Find a user by their username, including the password
-  const user = await User.findOne({ email: req.body.email }).select(
+  const team = await Team.findOne({ email: req.body.email }).select(
     '+password'
   );
 
   // Check if the user exists and the provided password is correct
   if (
-    !user ||
-    !(await user.correctPassword(req.body.password, user.password))
+    !team ||
+    !(await team.correctPassword(req.body.password, team.password))
   ) {
     return next(new AppError('Incorrect email or password', 401));
   }
 
   // Generate a new JWT token for the user
-  user.hashToken = signToken(user._id);
-  await user.save({ validateBeforeSave: false });
+  team.hashToken = signToken(team._id);
+  await team.save({ validateBeforeSave: false });
 
-  // Create and send a JWT token and respond with user data
-  createSendToken(user, 200, req, res);
+  // Create and send a JWT token and respond with team data
+  createSendToken(team, 200, req, res);
 });
 
-// Middleware function to protect routes (check if user is authenticated)
+exports.logout = catchAsync(async (req, res, next) => {
+  const team = await Team.findById(req.team.id);
+
+  if (!team) {
+    return next(new AppError('There is no team with this id.', 404));
+  }
+
+  team.hashToken = undefined;
+  await team.save({ validateBeforeSave: false });
+
+  res.status(200).json({
+    status: 'success',
+  });
+});
+
+// Middleware function to protect routes (check if Team is authenticated)
 exports.protect = catchAsync(async (req, res, next) => {
   let token;
 
@@ -103,25 +117,25 @@ exports.protect = catchAsync(async (req, res, next) => {
   // If no token is found, return an error
   if (!token) {
     return next(
-      new AppError('You are not logged in please log in to get access', 401)
+      new AppError('You Are Not Logged In Please Log In To Get Access', 401)
     );
   }
 
   // Verify the token and get the decoded user ID
   const decoded = await promisify(jwt.verify)(token, process.env.JWT_SECRET);
-  // Find the user associated with the token
-  const freshUser = await User.findById(decoded.id);
+  // Find the Team associated with the token
+  const freshTeam = await Team.findById(decoded.id);
 
-  // If the user doesn't exist, return an error
-  if (!freshUser) {
+  // If the Team doesn't exist, return an error
+  if (!freshTeam) {
     return next(
       new AppError(
-        'The user belonging to this token does not no longer exist.',
+        'The Team belonging to this token does not no longer exist.',
         404
       )
     );
   }
-  if (freshUser.hashToken != token) {
+  if (freshTeam.hashToken != token) {
     return next(
       new AppError(
         'The Session is Expired Or logged in another device. Please Login Again.',
@@ -130,41 +144,10 @@ exports.protect = catchAsync(async (req, res, next) => {
     );
   }
 
-  // Set the user data in the request object and response locals
-  req.user = freshUser;
-  res.locals.user = freshUser;
+  // Set the Team data in the request object and response locals
+  req.team = freshTeam;
+  res.locals.team = freshTeam;
 
   // Move to the next middleware
   next();
-});
-
-// Middleware function to restrict access to specific roles
-exports.restrictTo =
-  (...roles) =>
-  (req, res, next) => {
-    // Check if the user's role is included in the allowed roles
-    if (!roles.includes(req.user.role)) {
-      return next(
-        new AppError(
-          "You don't have the permission to access this service ",
-          403
-        )
-      );
-    }
-    next();
-  };
-
-exports.logout = catchAsync(async (req, res, next) => {
-  const user = await User.findById(req.user.id);
-
-  if (!user) {
-    return next(new AppError('There is no user with this id.', 404));
-  }
-
-  user.hashToken = undefined;
-  await user.save({ validateBeforeSave: false });
-
-  res.status(200).json({
-    status: 'success',
-  });
 });

@@ -4,6 +4,7 @@ const jwt = require('jsonwebtoken'); // Import JWT for token handling
 const User = require('../models/userModel'); // Import the User model
 const AppError = require('../utils/appError'); // Import custom error handling utility
 const catchAsync = require('../utils/catchAsync'); // Import utility for catching async errors
+const Company = require('../models/companyModel');
 
 // Function to sign a JSON Web Token (JWT) with user ID
 const signToken = (id) => {
@@ -13,8 +14,9 @@ const signToken = (id) => {
 };
 
 // Function to create and send a JWT token in a cookie and respond with user data
-const createSendToken = (user, statusCode, req, res) => {
-  const token = signToken(user._id);
+const createSendToken = (company, statusCode, req, res) => {
+  const token = signToken(company._id);
+
   // Define cookie options
   const cookieOptions = {
     expires: new Date(
@@ -27,39 +29,36 @@ const createSendToken = (user, statusCode, req, res) => {
   // Set the JWT token in a cookie
   res.cookie('jwt', token, cookieOptions);
 
-  // Remove the password from the user object before sending it to the client
-  user.password = undefined;
+  // Remove the password from the company object before sending it to the client
+  company.password = undefined;
 
-  // Respond with the JWT token and user data
+  // Respond with the JWT token and company data
   res.status(statusCode).json({
     status: 'success',
     token,
     data: {
-      user,
+      company,
     },
   });
 };
 
-// Controller function for user signup
-exports.signupUser = catchAsync(async (req, res, next) => {
-  // Create a new user based on request data
-  const newShipper = await User.create({
-    role: req.body.role,
-    fullName: req.body.fullName,
-    userName: req.body.userName,
-    ID_card_number: req.body.ID_card_number,
+// Controller function for Company signup
+exports.signup = catchAsync(async (req, res, next) => {
+  // Create a new Company based on request data
+  const newCompany = await Company.create({
+    companyName: req.body.companyName,
+    company_id: req.body.company_id,
     password: req.body.password,
-    birthDate: req.body.birthDate,
     address: req.body.address,
-    passwordConfirm: req.body.passwordConfirm,
     email: req.body.email,
+    passwordConfirm: req.body.passwordConfirm,
+    phoneNumber: req.body.phoneNumber,
   });
 
-  // Create and send a JWT token and respond with user data
-  createSendToken(newShipper, 201, req, res);
+  // Create and send a JWT token and respond with Company data
+  createSendToken(newCompany, 201, req, res);
 });
 
-// Controller function for user login
 exports.login = catchAsync(async (req, res, next) => {
   // Check if email and password are provided in the request body
   if (!req.body.password || !req.body.email) {
@@ -67,27 +66,42 @@ exports.login = catchAsync(async (req, res, next) => {
   }
 
   // Find a user by their username, including the password
-  const user = await User.findOne({ email: req.body.email }).select(
+  const company = await Company.findOne({ email: req.body.email }).select(
     '+password'
   );
 
   // Check if the user exists and the provided password is correct
   if (
-    !user ||
-    !(await user.correctPassword(req.body.password, user.password))
+    !company ||
+    !(await company.correctPassword(req.body.password, company.password))
   ) {
     return next(new AppError('Incorrect email or password', 401));
   }
 
   // Generate a new JWT token for the user
-  user.hashToken = signToken(user._id);
-  await user.save({ validateBeforeSave: false });
+  company.hashToken = signToken(company._id);
+  await company.save({ validateBeforeSave: false });
 
-  // Create and send a JWT token and respond with user data
-  createSendToken(user, 200, req, res);
+  // Create and send a JWT token and respond with company data
+  createSendToken(company, 200, req, res);
 });
 
-// Middleware function to protect routes (check if user is authenticated)
+exports.logout = catchAsync(async (req, res, next) => {
+  const company = await Company.findById(req.user.id);
+
+  if (!company) {
+    return next(new AppError('There is no Company with this id.', 404));
+  }
+
+  company.hashToken = undefined;
+  await company.save({ validateBeforeSave: false });
+
+  res.status(200).json({
+    status: 'success',
+  });
+});
+
+// Middleware function to protect routes (check if Company is authenticated)
 exports.protect = catchAsync(async (req, res, next) => {
   let token;
 
@@ -109,19 +123,19 @@ exports.protect = catchAsync(async (req, res, next) => {
 
   // Verify the token and get the decoded user ID
   const decoded = await promisify(jwt.verify)(token, process.env.JWT_SECRET);
-  // Find the user associated with the token
-  const freshUser = await User.findById(decoded.id);
+  // Find the company associated with the token
+  const freshCompany = await Company.findById(decoded.id);
 
-  // If the user doesn't exist, return an error
-  if (!freshUser) {
+  // If the company doesn't exist, return an error
+  if (!freshCompany) {
     return next(
       new AppError(
-        'The user belonging to this token does not no longer exist.',
+        'The company belonging to this token does not no longer exist.',
         404
       )
     );
   }
-  if (freshUser.hashToken != token) {
+  if (freshCompany.hashToken != token) {
     return next(
       new AppError(
         'The Session is Expired Or logged in another device. Please Login Again.',
@@ -130,41 +144,10 @@ exports.protect = catchAsync(async (req, res, next) => {
     );
   }
 
-  // Set the user data in the request object and response locals
-  req.user = freshUser;
-  res.locals.user = freshUser;
+  // Set the company data in the request object and response locals
+  req.company = freshCompany;
+  res.locals.company = freshCompany;
 
   // Move to the next middleware
   next();
-});
-
-// Middleware function to restrict access to specific roles
-exports.restrictTo =
-  (...roles) =>
-  (req, res, next) => {
-    // Check if the user's role is included in the allowed roles
-    if (!roles.includes(req.user.role)) {
-      return next(
-        new AppError(
-          "You don't have the permission to access this service ",
-          403
-        )
-      );
-    }
-    next();
-  };
-
-exports.logout = catchAsync(async (req, res, next) => {
-  const user = await User.findById(req.user.id);
-
-  if (!user) {
-    return next(new AppError('There is no user with this id.', 404));
-  }
-
-  user.hashToken = undefined;
-  await user.save({ validateBeforeSave: false });
-
-  res.status(200).json({
-    status: 'success',
-  });
 });

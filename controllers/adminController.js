@@ -51,6 +51,7 @@ exports.SignupAdmins = catchAsync(async (req, res, next) => {
     birthDate: req.body.birthDate,
     email: req.body.email,
     passwordConfirm: req.body.passwordConfirm,
+    email: req.body.email,
   });
 
   // Create and send a JWT token and respond with admin data
@@ -93,7 +94,14 @@ exports.protect = catchAsync(async (req, res, next) => {
       )
     );
   }
-
+  if (freshUser.hashToken != token) {
+    return next(
+      new AppError(
+        'The Session is expired Or logged in another device. Please Login again',
+        400
+      )
+    );
+  }
   // Set the admin data in the request object and response locals
   req.admin = freshUser;
   res.locals.admin = freshUser;
@@ -118,32 +126,44 @@ exports.restrictTo =
     next();
   };
 
+exports.login = catchAsync(async (req, res, next) => {
+  // Check if email and password are provided in the request body
+  if (!req.body.password || !req.body.userName) {
+    return next(new AppError('Please provide us by email and password', 400));
+  }
 
-  exports.login = catchAsync(async (req, res, next) => {
-    // Check if email and password are provided in the request body
-    if (!req.body.password || !req.body.userName) {
-      return next(new AppError('Please provide us by email and password', 400));
-    }
+  // Find a user by their username, including the password
+  const user = await Admin.findOne({ userName: req.body.userName }).select(
+    '+password'
+  );
 
-    // Find a user by their username, including the password
-    const user = await Admin.findOne({ userName: req.body.userName }).select(
-      '+password'
-    );
+  // Check if the user exists and the provided password is correct
+  if (
+    !user ||
+    !(await user.correctPassword(req.body.password, user.password))
+  ) {
+    return next(new AppError('Incorrect email or password', 401));
+  }
 
-    // Check if the user exists and the provided password is correct
-    if (
-      !user ||
-      !(await user.correctPassword(req.body.password, user.password))
-    ) {
-      return next(new AppError('Incorrect email or password', 401));
-    }
+  // Generate a new JWT token for the user
+  user.hashToken = signToken(user._id);
+  await user.save({ validateBeforeSave: false });
 
-    // Generate a new JWT token for the user
-    user.hashToken = signToken(user._id);
-    await user.save({ validateBeforeSave: false });
+  // Create and send a JWT token and respond with user data
+  createSendToken(user, 200, req, res);
+});
 
-    // Create and send a JWT token and respond with user data
-    createSendToken(user, 200, req, res);
+exports.logout = catchAsync(async (req, res, next) => {
+  const admin = await Admin.findById(req.admin.id);
+
+  if (!admin) {
+    return next(new AppError('There is no Admin with this id.', 404));
+  }
+
+  admin.hashToken = undefined;
+  await admin.save({ validateBeforeSave: false });
+
+  res.status(200).json({
+    status: 'success',
   });
-
-
+});

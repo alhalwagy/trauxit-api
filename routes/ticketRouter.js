@@ -14,7 +14,7 @@ router
   )
   .get(
     adminController.protect,
-    adminController.restrictTo('admin'),
+    adminController.restrictTo('admin', 'supporter'),
     ticketController.getAllTechTickets
   );
 
@@ -57,5 +57,4 @@ router
     ticketController.getTicket
   );
 
-  
 module.exports = router;

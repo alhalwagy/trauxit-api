@@ -12,8 +12,11 @@ router.route('/signup').post(authController.signupUser);
 // When a POST request is made to this route, it will be handled by the 'login' function from the 'authController'
 router.route('/login').post(authController.login);
 
+//Logout User From Application and remove token from DataBase
+
+router.route('/logout').post(authController.protect, authController.logout);
+
 router.use('/:carrierId/reviews', reviewRouter);
 // Export the router for use in other parts of your application
-
 
 module.exports = router;
