@@ -3,6 +3,13 @@ const adminController = require('../controllers/adminController'); // Import adm
 const carrierController = require('../controllers/carrierController');
 const authController = require('../controllers/authController');
 const router = express.Router();
+router
+  .route('/updatemyrole/')
+  .patch(
+    authController.protect,
+    authController.restrictTo('carrier'),
+    carrierController.updateCarrierToSubcarrier
+  );
 
 router
   .route('/')

@@ -84,7 +84,7 @@ exports.protect = catchAsync(async (req, res, next) => {
 
   // Find the admin associated with the token
   const freshUser = await Admin.findById(decoded.id);
-
+  console.log(freshUser);
   // If the admin doesn't exist, return an error
   if (!freshUser) {
     return next(

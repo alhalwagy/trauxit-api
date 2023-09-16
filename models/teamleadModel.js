@@ -53,21 +53,6 @@ const teamSchema = new mongoose.Schema(
       type: String,
       lowercase: true, // Store a lowercase slug based on the username
     },
-    currentDistance: Number,
-    email: {
-      type: String,
-      required: [true, 'A Team must have a email'],
-      unique: true,
-      lowercase: true,
-      validate: [validator.isEmail, 'please provide a valid email'],
-    },
-    phoneNumber: {
-      required: [true, 'Phone Number is required'],
-      unique: true,
-      type: String,
-      minlength: 11,
-      maxlength: 11,
-    },
   },
   {
     timestamps: true,

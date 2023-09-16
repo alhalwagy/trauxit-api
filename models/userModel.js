@@ -53,14 +53,14 @@ const userSchema = new mongoose.Schema(
       type: Date,
       required: [true, 'User must have a birth Date.'], // Birth date of the user, required field
     },
-  
+
     address: { type: String, required: [true, 'Address is required.'] }, // Address field, required
     rating: Number, // User's rating
 
     role: {
       required: [true, 'User must have a role'], // User's role, required field
       type: String,
-      enum: ['shipper', 'carrier', 'small-carrier'], // User's role is limited to specific values ('shipper','carrier','small-carrier')
+      enum: ['shipper', 'carrier', 'subcarrier', 'companycarrier'], // User's role is limited to specific values ('shipper','carrier','small-carrier')
     },
     // To check the given token same as database token
     hashToken: {
@@ -87,7 +87,6 @@ const userSchema = new mongoose.Schema(
       validate: [validator.isEmail, 'please provide a valid email'],
     },
     phoneNumber: String,
-    
   },
   {
     timestamps: true, // Automatically adds createdAt and updatedAt timestamps to the document

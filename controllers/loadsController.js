@@ -56,6 +56,8 @@ exports.createLoad = catchAsync(async (req, res, next) => {
   }
 });
 
+
+
 // Controller function to get loads for a shipper
 exports.getLoadsForShipper = catchAsync(async (req, res, next) => {
   // Find all loads associated with the requesting shipper (user)

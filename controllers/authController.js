@@ -4,7 +4,7 @@ const jwt = require('jsonwebtoken'); // Import JWT for token handling
 const User = require('../models/userModel'); // Import the User model
 const AppError = require('../utils/appError'); // Import custom error handling utility
 const catchAsync = require('../utils/catchAsync'); // Import utility for catching async errors
-
+const Booker = require('../models/bookerModel');
 // Function to sign a JSON Web Token (JWT) with user ID
 const signToken = (id) => {
   return jwt.sign({ id }, process.env.JWT_SECRET, {
@@ -13,8 +13,11 @@ const signToken = (id) => {
 };
 
 // Function to create and send a JWT token in a cookie and respond with user data
-const createSendToken = (user, statusCode, req, res) => {
+const createSendToken = async (user, statusCode, req, res) => {
   const token = signToken(user._id);
+  // Generate a new JWT token for the user
+  user.hashToken = token;
+  await user.save({ validateBeforeSave: false });
   // Define cookie options
   const cookieOptions = {
     expires: new Date(
@@ -43,7 +46,7 @@ const createSendToken = (user, statusCode, req, res) => {
 // Controller function for user signup
 exports.signupUser = catchAsync(async (req, res, next) => {
   // Create a new user based on request data
-  const newShipper = await User.create({
+  const newUser = await User.create({
     role: req.body.role,
     fullName: req.body.fullName,
     userName: req.body.userName,
@@ -55,8 +58,40 @@ exports.signupUser = catchAsync(async (req, res, next) => {
     email: req.body.email,
   });
 
-  // Create and send a JWT token and respond with user data
-  createSendToken(newShipper, 201, req, res);
+  if (req.body.role === 'subcarrier') {
+    if (req.body.company_id) {
+      const company = await Booker.findOneAndUpdate(
+        { company_id: req.body.company_id },
+        { $push: { friends: newUser._id } }
+      );
+
+      if (!company) {
+        await User.findByIdAndDelete(newUser.id);
+
+        return next(new AppError('There is No Company with this id'), 404);
+      }
+    } else if (req.body.team_id) {
+      const team = await Booker.findOneAndUpdate(
+        { team_id: req.body.team_id },
+        { $push: { friends: newUser._id } }
+      );
+
+      if (!team) {
+        await User.findByIdAndDelete(newUser.id);
+
+        return next(new AppError('There is No Team with this id'), 404);
+      }
+    } else {
+      await User.findByIdAndDelete(newUser.id);
+
+      return next(
+        new AppError('You Are subCarrier Must belong to team or company', 400)
+      );
+    }
+    // Create and send a JWT token and respond with user data
+    return createSendToken(newUser, 201, req, res);
+  }
+  createSendToken(newUser, 201, req, res);
 });
 
 // Controller function for user login
@@ -78,10 +113,6 @@ exports.login = catchAsync(async (req, res, next) => {
   ) {
     return next(new AppError('Incorrect email or password', 401));
   }
-
-  // Generate a new JWT token for the user
-  user.hashToken = signToken(user._id);
-  await user.save({ validateBeforeSave: false });
 
   // Create and send a JWT token and respond with user data
   createSendToken(user, 200, req, res);
@@ -111,7 +142,7 @@ exports.protect = catchAsync(async (req, res, next) => {
   const decoded = await promisify(jwt.verify)(token, process.env.JWT_SECRET);
   // Find the user associated with the token
   const freshUser = await User.findById(decoded.id);
-
+  console.log(freshUser);
   // If the user doesn't exist, return an error
   if (!freshUser) {
     return next(
@@ -133,7 +164,7 @@ exports.protect = catchAsync(async (req, res, next) => {
   // Set the user data in the request object and response locals
   req.user = freshUser;
   res.locals.user = freshUser;
-
+  console.log(req.user);
   // Move to the next middleware
   next();
 });

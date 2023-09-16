@@ -1,10 +1,12 @@
 const bcrypt = require('bcrypt');
 const axios = require('axios');
+const crypto = require('crypto');
 
 const AppError = require('../utils/appError'); // Import custom error handling utility
 const User = require('../models/userModel'); // Import the User model
 const catchAsync = require('../utils/catchAsync');
 const Loads = require('../models/loadsModel');
+const Booker = require('../models/bookerModel');
 
 //Get All Carriers Data for Admin
 exports.getAllCarriers = catchAsync(async (req, res, next) => {
@@ -183,3 +185,82 @@ exports.updateCurrentLocation = catchAsync(async (req, res, next) => {
   });
 });
 
+exports.updateCarrierToSubcarrier = catchAsync(async (req, res, next) => {
+  const user = await User.findByIdAndUpdate(req.user.id, {
+    role: 'subcarrier',
+  });
+
+  if (req.body.team_id) {
+    const inputVerfied = crypto
+      .createHash('sha256')
+      .update(req.body.team_id)
+      .digest('hex');
+    const team = await Booker.findOne({ email: req.body.email });
+
+    if (inputVerfied === team.team_id) {
+      const updatedteam = await Booker.findOneAndUpdate(
+        { email: req.body.email },
+        {
+          $push: { friends: user._id },
+        },
+        {
+          runValidators: false,
+        }
+      );
+      if (!updatedteam) {
+        user.role = 'carrier';
+        await user.save({ validateBeforeSave: false });
+        return next(new AppError('This team Not Found', 404));
+      }
+      teamName = updatedteam.teamName;
+      res.status(200).json({
+        status: 'success',
+        data: {
+          teamName,
+        },
+      });
+    } else {
+      return next(new AppError('teamId is not validated.', 401));
+    }
+  } else if (req.body.company_id) {
+    const inputVerfied = crypto
+      .createHash('sha256')
+      .update(req.body.company_id)
+      .digest('hex');
+    const company = await Booker.findOne({ email: req.body.email });
+
+    if (inputVerfied === company.company_id) {
+      const updatedcompany = await Booker.findOneAndUpdate(
+        { email: req.body.email },
+        {
+          $push: { friends: user._id },
+        },
+        {
+          new: true,
+          runValidators: false,
+        }
+      );
+      if (!updatedcompany) {
+        user.role = 'carrier';
+        await user.save({ validateBeforeSave: false });
+        return next(new AppError('This company Not Found', 404));
+      }
+      companyName = updatedcompany.companyName;
+      res.status(200).json({
+        status: 'success',
+        data: {
+          companyName,
+        },
+      });
+    } else {
+      return next(new AppError('teamId is not validated.', 401));
+    }
+  } else {
+    return next(
+      new AppError(
+        'You lost your premissiom as carrier from your bad request. Please call our supporter to return your permition0.',
+        400
+      )
+    );
+  }
+});

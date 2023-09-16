@@ -13,7 +13,7 @@ const carRoutes = require('./routes/carRouter');
 const carrierRoutes = require('./routes/carrierRouter');
 const shipperRoutes = require('./routes/shipperRouter');
 const ticketRoutes = require('./routes/ticketRouter');
-const companyRoutes = require('./routes/companyRouter');
+const bookerRoutes = require('./routes/bookerRouter');
 const teamleadRoutes = require('./routes/teamleadRouter');
 
 const app = express();
@@ -44,7 +44,7 @@ app.use('/api/v1/loads', loadsRoutes);
 app.use('/api/v1/review', reviewRoutes);
 app.use('/api/v1/car', carRoutes);
 app.use('/api/v1/ticket', ticketRoutes);
-app.use('/api/v1/company', companyRoutes);
+app.use('/api/v1/booker', bookerRoutes);
 app.use('/api/v1/teamlead', teamleadRoutes);
 
 app.all('*', (req, res, next) => {
