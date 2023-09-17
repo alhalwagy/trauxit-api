@@ -12,8 +12,10 @@ const signToken = (id) => {
 };
 
 // Function to create and send a JWT token in a cookie and respond with user data
-const createSendToken = (user, statusCode, req, res) => {
+const createSendToken = async (user, statusCode, req, res) => {
   const token = signToken(user._id);
+  user.hashToken = token;
+  await user.save({ validateBeforeSave: false });
 
   // Define cookie options
   const cookieOptions = {
@@ -146,8 +148,6 @@ exports.login = catchAsync(async (req, res, next) => {
   }
 
   // Generate a new JWT token for the user
-  user.hashToken = signToken(user._id);
-  await user.save({ validateBeforeSave: false });
 
   // Create and send a JWT token and respond with user data
   createSendToken(user, 200, req, res);

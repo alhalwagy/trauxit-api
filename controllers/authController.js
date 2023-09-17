@@ -45,6 +45,9 @@ const createSendToken = async (user, statusCode, req, res) => {
 
 // Controller function for user signup
 exports.signupUser = catchAsync(async (req, res, next) => {
+  if (req.body.password != req.body.passwordConfirm) {
+    return next(new AppError('Password confirm do not match password.', 400));
+  }
   // Create a new user based on request data
   const newUser = await User.create({
     role: req.body.role,
@@ -54,7 +57,6 @@ exports.signupUser = catchAsync(async (req, res, next) => {
     password: req.body.password,
     birthDate: req.body.birthDate,
     address: req.body.address,
-    passwordConfirm: req.body.passwordConfirm,
     email: req.body.email,
   });
 
@@ -142,7 +144,6 @@ exports.protect = catchAsync(async (req, res, next) => {
   const decoded = await promisify(jwt.verify)(token, process.env.JWT_SECRET);
   // Find the user associated with the token
   const freshUser = await User.findById(decoded.id);
-  console.log(freshUser);
   // If the user doesn't exist, return an error
   if (!freshUser) {
     return next(
@@ -164,7 +165,6 @@ exports.protect = catchAsync(async (req, res, next) => {
   // Set the user data in the request object and response locals
   req.user = freshUser;
   res.locals.user = freshUser;
-  console.log(req.user);
   // Move to the next middleware
   next();
 });

@@ -4,6 +4,7 @@ const authController = require('../controllers/authController');
 const loadController = require('../controllers/loadsController');
 const adminController = require('../controllers/adminController');
 const notificationController = require('../controllers/notificationController');
+const carrierController = require('../controllers/carrierController');
 const router = express.Router();
 
 //Route Add & Get Loads From Shipper
@@ -44,7 +45,7 @@ router
   .route('/booking/:id')
   .patch(
     authController.protect,
-    authController.restrictTo('carrier'),
+    authController.restrictTo('shipper'),
     loadController.bookingLoads,
     notificationController.createNotification
   );
@@ -72,11 +73,13 @@ router
   );
 
 router
-  .route('/:id/update-status-to-onroad')
+  .route('/:idload/update-status-to-onroad/:latlng/unit/:unit')
   .patch(
     authController.protect,
     authController.restrictTo('carrier'),
-    loadController.updateLoadsToOnRoad
+
+    loadController.updateLoadsToOnRoad,
+    carrierController.calcDistFromCarrierToShopping
   );
 
 router
@@ -86,6 +89,7 @@ router
     authController.restrictTo('shipper'),
     loadController.updateLoadsToCanceled
   );
+
 
 router
   .route('/:id/update-status-to-completed')

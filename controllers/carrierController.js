@@ -8,6 +8,37 @@ const catchAsync = require('../utils/catchAsync');
 const Loads = require('../models/loadsModel');
 const Booker = require('../models/bookerModel');
 
+//get location for carriers
+exports.locationdectecd = catchAsync(async (req, res, next) => {
+  const latlng = req.params.latlng;
+  const unit = req.params.unit;
+  const [lat, lng] = latlng.split(',');
+  if (!lat || !lng) {
+    next(
+      new AppError('There is no latitude or longitude in the request!', 400)
+    );
+  }
+  const updatedcarrier = await User.findByIdAndUpdate(
+    req.user.id,
+    {
+      currentLocation: {
+        coordinates: [lat, lng],
+      },
+    },
+    {
+      runValidators: false,
+      new: true,
+    }
+  );
+
+  res.status(200).json({
+    status: 'success',
+    data: {
+      updatedcarrier,
+    },
+  });
+});
+
 //Get All Carriers Data for Admin
 exports.getAllCarriers = catchAsync(async (req, res, next) => {
   const carriers = await User.find({ role: 'carrier' });
@@ -89,17 +120,11 @@ exports.createCarrier = catchAsync(async (req, res, next) => {
 });
 
 exports.calcDistFromCarrierToShopping = catchAsync(async (req, res, next) => {
-  const latlng = req.params.latlng;
-  const [lat, lng] = latlng.split(',');
+  const unit = req.params.unit;
+  const multiplier = unit === 'mi' ? 0.000621371192 : 0.001;
 
-  if (!lat || !lng) {
-    next(
-      new AppError('There is no latitude or longitude in the request!', 400)
-    );
-  }
   let userCoordinates;
   const load = await Loads.findById(req.params.idload);
-
   if (load.idCarrier.toString() != req.user.id) {
     return next(new AppError('This Load Not For you.'), 401);
   }
@@ -119,10 +144,15 @@ exports.calcDistFromCarrierToShopping = catchAsync(async (req, res, next) => {
     lat: userCoordinates[0],
     lon: userCoordinates[1],
   };
-  const point2 = { lat: lng * 1, lon: lat * 1 };
+  console.log(req.user.currentLocation.coordinates);
+  const point2 = {
+    lat: req.user.currentLocation.coordinates[1] * 1,
+    lon: req.user.currentLocation.coordinates[0] * 1,
+  };
 
+  const travelMode = 'truck';
   // TomTom API endpoint for calculating distance
-  const apiUrl = `https://api.tomtom.com/routing/1/calculateRoute/${point1.lat},${point1.lon}:${point2.lat},${point2.lon}/json`;
+  const apiUrl = `https://api.tomtom.com/routing/1/calculateRoute/${point1.lat},${point1.lon}:${point2.lat},${point2.lon}/json?travelMode=${travelMode}`;
 
   // Make the API request
   axios
@@ -144,7 +174,7 @@ exports.calcDistFromCarrierToShopping = catchAsync(async (req, res, next) => {
       // Extract the distance in meters from the response
       const distanceInMeters = data.routes[0].summary.lengthInMeters;
       // Convert the distance to kilometers
-      const distanceInKilometers = distanceInMeters / 1000;
+      const distanceInKilometers = distanceInMeters * multiplier;
       const distance = distanceInKilometers.toFixed(2);
 
       req.user.currentDistance = distance;
@@ -197,6 +227,13 @@ exports.updateCarrierToSubcarrier = catchAsync(async (req, res, next) => {
       .digest('hex');
     const team = await Booker.findOne({ email: req.body.email });
 
+    if (!team) {
+      await User.findByIdAndUpdate(req.user.id, {
+        role: 'carrier',
+      });
+      return next(new AppError('NoT Found team With this id', 404));
+    }
+
     if (inputVerfied === team.team_id) {
       const updatedteam = await Booker.findOneAndUpdate(
         { email: req.body.email },
@@ -229,6 +266,13 @@ exports.updateCarrierToSubcarrier = catchAsync(async (req, res, next) => {
       .digest('hex');
     const company = await Booker.findOne({ email: req.body.email });
 
+    if (!company) {
+      await User.findByIdAndUpdate(req.user.id, {
+        role: 'carrier',
+      });
+      return next(new AppError('NoT Found Company With this id', 404));
+    }
+
     if (inputVerfied === company.company_id) {
       const updatedcompany = await Booker.findOneAndUpdate(
         { email: req.body.email },
@@ -242,6 +286,7 @@ exports.updateCarrierToSubcarrier = catchAsync(async (req, res, next) => {
       );
       if (!updatedcompany) {
         user.role = 'carrier';
+        console.log(user);
         await user.save({ validateBeforeSave: false });
         return next(new AppError('This company Not Found', 404));
       }
@@ -253,7 +298,7 @@ exports.updateCarrierToSubcarrier = catchAsync(async (req, res, next) => {
         },
       });
     } else {
-      return next(new AppError('teamId is not validated.', 401));
+      return next(new AppError('company is not validated.', 401));
     }
   } else {
     return next(
@@ -263,4 +308,39 @@ exports.updateCarrierToSubcarrier = catchAsync(async (req, res, next) => {
       )
     );
   }
+});
+
+exports.getBookedLoadsForCarrier = catchAsync(async (req, res, next) => {
+  const loads = await Loads.find({
+    status: 'Booked',
+    idCarrier: req.user.id.toString(),
+  });
+
+  if (loads.length === 0) {
+    return next(new AppError('There is no loads Booked for you', 404));
+  }
+  res.status(200).json({
+    status: 'success',
+    result: loads.length,
+    data: {
+      loads,
+    },
+  });
+});
+
+exports.getdroupedoutLoadsForCarrier = catchAsync(async (req, res, next) => {
+  const loads = await Loads.find({
+    status: 'Completed',
+    idCarrier: req.user.id.toString(),
+  });
+  if (loads.length === 0) {
+    return next(new AppError('There is no loads Carried for you', 404));
+  }
+  res.status(200).json({
+    status: 'success',
+    result: loads.length,
+    data: {
+      loads,
+    },
+  });
 });

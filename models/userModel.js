@@ -34,21 +34,6 @@ const userSchema = new mongoose.Schema(
       type: String,
       required: [true, 'User must have a Password.'], // Password of the user, required field
     },
-    passwordConfirm: {
-      type: String,
-      required: [
-        true,
-        'Confirm Password is required. Please enter your confirm password', // Confirm password field, required with custom error message
-      ],
-      validate: {
-        validator: function (passwordConfirm) {
-          // Custom validation function to check if passwordConfirm matches password
-          return passwordConfirm === this.password;
-        },
-        message: "Confirm password doesn't match password ", // Error message if validation fails
-      },
-    },
-
     birthDate: {
       type: Date,
       required: [true, 'User must have a birth Date.'], // Birth date of the user, required field
@@ -112,7 +97,6 @@ userSchema.pre('save', async function (next) {
   }
 
   this.password = await bcrypt.hash(this.password, 14);
-  this.passwordConfirm = undefined; // Clear the passwordConfirm field
   next();
 });
 

@@ -115,6 +115,7 @@ exports.signup = catchAsync(async (req, res, next) => {
       userName: req.body.userName,
       role: req.body.role,
     });
+
     createSendToken(newBooker, 201, req, res);
   }
 });

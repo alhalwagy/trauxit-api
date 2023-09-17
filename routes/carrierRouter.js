@@ -12,6 +12,22 @@ router
   );
 
 router
+  .route('/mybookedloads/')
+  .get(
+    authController.protect,
+    authController.restrictTo('carrier'),
+    carrierController.getBookedLoadsForCarrier
+  );
+
+router
+  .route('/mycompletedloads/')
+  .get(
+    authController.protect,
+    authController.restrictTo('carrier'),
+    carrierController.getdroupedoutLoadsForCarrier
+  );
+
+router
   .route('/')
   .get(
     adminController.protect,
@@ -43,11 +59,18 @@ router
   );
 
 router
-  .route('/:idload/calcdistancetoshoping/:latlng')
+  .route('/:idload/calcdistancetoshoping/unit/:unit')
   .patch(
     authController.protect,
     authController.restrictTo('carrier'),
     carrierController.calcDistFromCarrierToShopping
   );
 
+router
+  .route('/updatelocation/:latlng')
+  .patch(
+    authController.protect,
+    authController.restrictTo('carrier'),
+    carrierController.locationdectecd
+  );
 module.exports = router;

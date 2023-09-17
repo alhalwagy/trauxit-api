@@ -1,4 +1,6 @@
 // Import necessary models and modules
+const axios = require('axios');
+
 const Loads = require('../models/loadsModel'); // Import the Loads model
 const User = require('../models/userModel'); // Import the User model
 const AppError = require('../utils/appError'); // Import an error handling utility
@@ -55,8 +57,6 @@ exports.createLoad = catchAsync(async (req, res, next) => {
     });
   }
 });
-
-
 
 // Controller function to get loads for a shipper
 exports.getLoadsForShipper = catchAsync(async (req, res, next) => {
@@ -116,7 +116,6 @@ exports.bookingLoads = catchAsync(async (req, res, next) => {
     req.params.id,
     {
       status: 'Booked',
-      idCarrier: req.user.id,
     },
     { new: true, runValidators: false }
   );
@@ -158,38 +157,65 @@ exports.getLoadWithin = catchAsync(async (req, res, next) => {
     },
   });
 });
-//Get Distances between all points in DB and Specified Point
-exports.getDistances = catchAsync(async (req, res, next) => {
-  const { latlng, unit } = req.params;
-  const [lat, lng] = latlng.split(',');
 
+exports.getDistances = catchAsync(async (req, res, next) => {
+  const latlng = req.params.latlng;
+  const unit = req.params.unit;
+  const [lat, lng] = latlng.split(',');
   const multiplier = unit === 'mi' ? 0.000621371192 : 0.001;
+
   if (!lat || !lng) {
-    next(new AppError('there is no latitude or longitude in request!!', 400));
+    next(
+      new AppError('There is no latitude or longitude in the request!', 400)
+    );
+  }
+  let userCoordinates;
+  const loads = await Loads.find({ status: 'available' });
+  const axiosPromises = [];
+
+  for (const el of loads) {
+    const apiKey = process.env.API_KEY_TOMTOM;
+    userCoordinates = el.PickupLocation.coordinates;
+    const point1 = {
+      lat: userCoordinates[0],
+      lon: userCoordinates[1],
+    };
+    const point2 = { lat: lng * 1, lon: lat * 1 };
+    const travelMode = 'truck';
+    const apiUrl = `https://api.tomtom.com/routing/1/calculateRoute/${point1.lat},${point1.lon}:${point2.lat},${point2.lon}/json?travelMode=${travelMode}`;
+
+    const axiosPromise = axios.get(apiUrl, {
+      params: {
+        key: apiKey,
+      },
+    });
+
+    axiosPromises.push(axiosPromise);
   }
 
-  const distances = await Loads.aggregate([
-    {
-      $geoNear: {
-        near: {
-          type: 'Point',
-          coordinates: [lng * 1, lat * 1],
-        },
-        distanceField: 'distance',
-        distanceMultiplier: multiplier,
-      },
-    },
-    {
-      $project: {
-        nameLoads: 1,
-        distance: 1,
-      },
-    },
-  ]);
+  const axiosResponses = await Promise.all(axiosPromises);
 
+  const distances = [];
+
+  for (let i = 0; i < loads.length; i++) {
+    const response = axiosResponses[i];
+    if (response.status > 200) {
+      return next(
+        new AppError(
+          'Failed to retrieve distance. Check your coordinates.',
+          404
+        )
+      );
+    }
+    const data = response.data;
+
+    const distanceInMeters = data.routes[0].summary.lengthInMeters;
+    const distanceInKilometers = distanceInMeters * multiplier;
+    const distance = distanceInKilometers.toFixed(2);
+    distances.push({ load: loads[i], distance: distance });
+  }
   res.status(200).json({
     status: 'success',
-
     data: {
       data: distances,
     },
@@ -264,7 +290,7 @@ exports.updateLoadsToInchecksp = catchAsync(async (req, res, next) => {
 exports.updateLoadsToOnRoad = catchAsync(async (req, res, next) => {
   if (req.user.currentDistance < 1) {
     const load = await Loads.findByIdAndUpdate(
-      req.params.id,
+      req.params.idload,
       {
         status: 'inroads',
       },
@@ -273,12 +299,14 @@ exports.updateLoadsToOnRoad = catchAsync(async (req, res, next) => {
         runValidators: false,
       }
     );
-    res.status(200).json({
-      status: 'success',
-      data: {
-        load,
-      },
-    });
+    next();
+    // res.status(200).json({
+    //   status: 'success',
+    //   data: {
+    //     load,
+    //   },
+
+    // });
   } else {
     res.status(400).json({
       status: 'fail',
@@ -318,7 +346,7 @@ exports.updateLoadsToCanceled = catchAsync(async (req, res, next) => {
 
 //Update Load Status To Completed
 exports.updateLoadsToCompleted = catchAsync(async (req, res, next) => {
-  if (req.user.calculateDistance < 1) {
+  if (req.user.currentDistance < 1) {
     const load = await Loads.findByIdAndUpdate(
       req.params.id,
       {
@@ -329,17 +357,14 @@ exports.updateLoadsToCompleted = catchAsync(async (req, res, next) => {
         runValidators: false,
       }
     );
-
+    req.user.currentDistance = 0;
+    await req.user.save({ validateBeforeSave: false });
     res.status(200).json({
       status: 'success',
       data: {
         load,
       },
     });
-
-    req.user.currentDistance = 0;
-    await req.user.save({});
-    console.log(req.user.currentDistance);
   } else {
     res.status(400).json({
       status: 'fail',
