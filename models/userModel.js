@@ -71,12 +71,34 @@ const userSchema = new mongoose.Schema(
       lowercase: true,
       validate: [validator.isEmail, 'please provide a valid email'],
     },
-    phoneNumber: String,
+    phoneNumber: {
+      type: String,
+      // minlength: 11,
+      // maxlength: 11,
+      // required: [true, 'Phone Number is required.'],
+      //Apply custom validation to Phone number for user to match spacific country
+
+      // validate: {
+      //   validator: function (value) {
+      //     // Regular expression for validating Egyptian phone numbers
+      //     const egyptianPhoneNumberRegex = /^(?:\+20|0)(1\d{9}|[2-5]\d{7})$/;
+      //     return egyptianPhoneNumberRegex.test(value);
+      //   },
+      //   message: 'Invalid Egyptian phone number',
+      // },
+    },
+    passwordChangedAt: Date,
   },
   {
     timestamps: true, // Automatically adds createdAt and updatedAt timestamps to the document
   }
 );
+userSchema.pre('save', function (next) {
+  if (!this.isModified('password') || this.isNew) return next();
+
+  this.passwordChangedAt = Date.now() - 1000;
+  next();
+});
 
 // Pre-save middleware to generate a slug based on the username
 userSchema.pre('save', function (next) {
@@ -120,6 +142,24 @@ userSchema.methods.correctPassword = async function (
   userPassword
 ) {
   return await bcrypt.compare(candidatePassword, userPassword);
+};
+
+userSchema.methods.correctPassword = async function (
+  candidatePassword,
+  userPassword
+) {
+  return await bcrypt.compare(candidatePassword, userPassword);
+};
+
+userSchema.methods.checkPasswordChanged = function (JWTTimestamps) {
+  if (this.passwordChangedAt) {
+    const changedTimestamps = parseInt(
+      this.passwordChangedAt.getTime() / 1000,
+      10
+    );
+    return JWTTimestamps < changedTimestamps;
+  }
+  return false;
 };
 
 // Create a User model using the userSchema

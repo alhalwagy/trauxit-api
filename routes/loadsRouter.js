@@ -51,10 +51,20 @@ router
   );
 
 router
-  .route('/loads-within/:distance/center/:latlng/unit/:unit')
-  .get(loadController.getLoadWithin);
+  .route('/loads-within/:distance/unit/:unit')
+  .get(
+    authController.protect,
+    authController.restrictTo('carrier'),
+    loadController.getLoadWithin
+  );
 
-router.route('/distances/:latlng/unit/:unit').get(loadController.getDistances);
+router
+  .route('/distances/unit/:unit')
+  .get(
+    authController.protect,
+    authController.restrictTo('carrier'),
+    loadController.getDistances
+  );
 
 router
   .route('/:id/update-status-to-available')
@@ -73,13 +83,11 @@ router
   );
 
 router
-  .route('/:idload/update-status-to-onroad/:latlng/unit/:unit')
+  .route('/:idload/update-status-to-onroad/')
   .patch(
     authController.protect,
     authController.restrictTo('carrier'),
-
-    loadController.updateLoadsToOnRoad,
-    carrierController.calcDistFromCarrierToShopping
+    loadController.updateLoadsToOnRoad
   );
 
 router
@@ -90,9 +98,8 @@ router
     loadController.updateLoadsToCanceled
   );
 
-
 router
-  .route('/:id/update-status-to-completed')
+  .route('/:idload/update-status-to-completed/')
   .patch(
     authController.protect,
     authController.restrictTo('carrier'),

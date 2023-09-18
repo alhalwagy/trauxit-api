@@ -136,16 +136,23 @@ exports.bookingLoads = catchAsync(async (req, res, next) => {
 });
 
 exports.getLoadWithin = catchAsync(async (req, res, next) => {
-  const { distance, latlng, unit } = req.params;
-  const [lat, lng] = latlng.split(',');
+  const { distance, unit } = req.params;
+
   const raduis = unit === 'mi' ? distance / 3963.2 : distance / 6378.1;
 
-  if (!lat || !lng) {
-    next(new AppError('there is no latitude or longitude in request!!', 400));
-  }
-
+  //  req.user.currentLocation.coordinates[0], [req.user.currentLocation.coordinates[0]
   const loads = await Loads.find({
-    PickupLocation: { $geoWithin: { $centerSphere: [[lng, lat], raduis] } },
+    PickupLocation: {
+      $geoWithin: {
+        $centerSphere: [
+          [
+            req.user.currentLocation.coordinates[0],
+            req.user.currentLocation.coordinates[1],
+          ],
+          raduis,
+        ],
+      },
+    },
   });
 
   // console.log(distance, lat, lng, unit);
@@ -158,17 +165,11 @@ exports.getLoadWithin = catchAsync(async (req, res, next) => {
   });
 });
 
+//Get Distance between carrier and all available loads
 exports.getDistances = catchAsync(async (req, res, next) => {
-  const latlng = req.params.latlng;
   const unit = req.params.unit;
-  const [lat, lng] = latlng.split(',');
   const multiplier = unit === 'mi' ? 0.000621371192 : 0.001;
 
-  if (!lat || !lng) {
-    next(
-      new AppError('There is no latitude or longitude in the request!', 400)
-    );
-  }
   let userCoordinates;
   const loads = await Loads.find({ status: 'available' });
   const axiosPromises = [];
@@ -180,7 +181,10 @@ exports.getDistances = catchAsync(async (req, res, next) => {
       lat: userCoordinates[0],
       lon: userCoordinates[1],
     };
-    const point2 = { lat: lng * 1, lon: lat * 1 };
+    const point2 = {
+      lat: req.user.currentLocation.coordinates[1] * 1,
+      lon: req.user.currentLocation.coordinates[0] * 1,
+    };
     const travelMode = 'truck';
     const apiUrl = `https://api.tomtom.com/routing/1/calculateRoute/${point1.lat},${point1.lon}:${point2.lat},${point2.lon}/json?travelMode=${travelMode}`;
 
@@ -221,26 +225,6 @@ exports.getDistances = catchAsync(async (req, res, next) => {
     },
   });
 });
-
-// exports.updateLoadsToAvailable = catchAsync(async (req, res, next) => {
-//   const load = await Loads.findByIdAndUpdate(
-//     req.params.id,
-//     {
-//       status: 'available',
-//     },
-//     {
-//       new: true,
-//       runValidators: false,
-//     }
-//   );
-
-//   res.status(200).json({
-//     status: 'success',
-//     data: {
-//       load,
-//     },
-//   });
-// });
 
 //Update Load Status To Available
 exports.updateLoadsToAvailable = catchAsync(async (req, res, next) => {
@@ -285,8 +269,9 @@ exports.updateLoadsToInchecksp = catchAsync(async (req, res, next) => {
   });
 });
 
-//Update Load Status To On Road
 
+
+//Update Load Status To On Road
 exports.updateLoadsToOnRoad = catchAsync(async (req, res, next) => {
   if (req.user.currentDistance < 1) {
     const load = await Loads.findByIdAndUpdate(
@@ -299,14 +284,13 @@ exports.updateLoadsToOnRoad = catchAsync(async (req, res, next) => {
         runValidators: false,
       }
     );
-    next();
-    // res.status(200).json({
-    //   status: 'success',
-    //   data: {
-    //     load,
-    //   },
-
-    // });
+    req.load = load;
+    res.status(200).json({
+      status: 'success',
+      data: {
+        load,
+      },
+    });
   } else {
     res.status(400).json({
       status: 'fail',
@@ -314,6 +298,7 @@ exports.updateLoadsToOnRoad = catchAsync(async (req, res, next) => {
     });
   }
 });
+
 
 //Update Load Status To canceled
 exports.updateLoadsToCanceled = catchAsync(async (req, res, next) => {
@@ -344,8 +329,22 @@ exports.updateLoadsToCanceled = catchAsync(async (req, res, next) => {
   }
 });
 
+
 //Update Load Status To Completed
 exports.updateLoadsToCompleted = catchAsync(async (req, res, next) => {
+  const load = await Loads.findById(req.params.idload);
+  if (!load) {
+    return next(new AppError('There is no Load with this id.', 404));
+  }
+  if (load.status != 'inroads') {
+    return next(
+      new AppError(
+        'This load can not be converted to completed because it is not in road',
+        404
+      )
+    );
+  }
+
   if (req.user.currentDistance < 1) {
     const load = await Loads.findByIdAndUpdate(
       req.params.id,
@@ -373,6 +372,7 @@ exports.updateLoadsToCompleted = catchAsync(async (req, res, next) => {
   }
 });
 
+
 //For Admin
 exports.getAllLoads = catchAsync(async (req, res, next) => {
   const loads = await Loads.find({});
@@ -387,6 +387,7 @@ exports.getAllLoads = catchAsync(async (req, res, next) => {
     },
   });
 });
+
 
 //For Admin
 exports.updateLoads = catchAsync(async (req, res, next) => {
@@ -405,6 +406,7 @@ exports.updateLoads = catchAsync(async (req, res, next) => {
   });
 });
 
+
 //For Admin
 exports.getLoad = catchAsync(async (req, res, next) => {
   const load = await Loads.findById(req.params.id);
@@ -418,6 +420,8 @@ exports.getLoad = catchAsync(async (req, res, next) => {
     },
   });
 });
+
+
 //For Admin
 exports.deleteLoad = catchAsync(async (req, res, next) => {
   // Check if the load is canceled.

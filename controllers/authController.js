@@ -5,6 +5,8 @@ const User = require('../models/userModel'); // Import the User model
 const AppError = require('../utils/appError'); // Import custom error handling utility
 const catchAsync = require('../utils/catchAsync'); // Import utility for catching async errors
 const Booker = require('../models/bookerModel');
+const sendEmail = require('../utils/email');
+
 // Function to sign a JSON Web Token (JWT) with user ID
 const signToken = (id) => {
   return jwt.sign({ id }, process.env.JWT_SECRET, {
@@ -90,9 +92,21 @@ exports.signupUser = catchAsync(async (req, res, next) => {
         new AppError('You Are subCarrier Must belong to team or company', 400)
       );
     }
+    await sendEmail({
+      to: newUser.email,
+      subject: 'Welcome to Join Us.',
+      message: `
+Hi ${newUser.fullName}, \n
+Great welcome emails don’t stop at clothing or tech brands. Chipotle offers a great lesson many brands in different sectors can learn from. 
+`,
+    });
     // Create and send a JWT token and respond with user data
     return createSendToken(newUser, 201, req, res);
   }
+  await sendEmail({
+    to: newUser.email,
+    subject: 'Welcome to Join Us.',
+  });
   createSendToken(newUser, 201, req, res);
 });
 
@@ -133,6 +147,7 @@ exports.protect = catchAsync(async (req, res, next) => {
   } else if (req.cookies.jwt) {
     token = req.cookies.jwt;
   }
+
   // If no token is found, return an error
   if (!token) {
     return next(
@@ -195,6 +210,42 @@ exports.logout = catchAsync(async (req, res, next) => {
   user.hashToken = undefined;
   await user.save({ validateBeforeSave: false });
 
+  res.status(200).json({
+    status: 'success',
+    taken: 'Logout',
+  });
+});
+
+exports.getMe = catchAsync(async (req, res, next) => {
+  const user = await User.findById(req.user.id);
+  user.password = undefined;
+  if (!user) {
+    return next(new AppError('User not found', 404));
+  }
+
+  res.status(200).json({
+    status: 'success',
+    data: {
+      user,
+    },
+  });
+});
+
+exports.updateMyPassword = catchAsync(async (req, res, next) => {
+  const userData = await User.findById(req.user.id);
+  if (!userData) {
+    return next(new AppError('User not found. Please log in again.'));
+  }
+  if (req.body.password != req.body.passwordConfirm) {
+    return next(new AppError('Password confirm do not match password.', 400));
+  }
+
+  if (!userData.correctPassword(req.body.currentPassword, req.user.password)) {
+    return next(new AppError('Your current password is wrong.', 401));
+  }
+
+  userData.password = req.body.password;
+  await userData.save();
   res.status(200).json({
     status: 'success',
   });

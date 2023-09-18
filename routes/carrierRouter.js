@@ -28,6 +28,21 @@ router
   );
 
 router
+  .route('/:idload/calcdistancetoshoping/unit/:unit')
+  .patch(
+    authController.protect,
+    authController.restrictTo('carrier'),
+    carrierController.calcDistFromCarrierToShopping
+  );
+
+router
+  .route('/updatelocation/:latlng')
+  .patch(
+    authController.protect,
+    authController.restrictTo('carrier'),
+    carrierController.locationdectecd
+  );
+router
   .route('/')
   .get(
     adminController.protect,
@@ -58,19 +73,4 @@ router
     carrierController.deleteCarriers
   );
 
-router
-  .route('/:idload/calcdistancetoshoping/unit/:unit')
-  .patch(
-    authController.protect,
-    authController.restrictTo('carrier'),
-    carrierController.calcDistFromCarrierToShopping
-  );
-
-router
-  .route('/updatelocation/:latlng')
-  .patch(
-    authController.protect,
-    authController.restrictTo('carrier'),
-    carrierController.locationdectecd
-  );
 module.exports = router;

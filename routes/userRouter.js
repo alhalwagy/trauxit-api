@@ -15,6 +15,10 @@ router.route('/login').post(authController.login);
 //Logout User From Application and remove token from DataBase
 
 router.route('/logout').post(authController.protect, authController.logout);
+router.route('/getmydata').get(authController.protect, authController.getMe);
+router
+  .route('/updatemypassword')
+  .get(authController.protect, authController.updateMyPassword);
 
 router.use('/:carrierId/reviews', reviewRouter);
 // Export the router for use in other parts of your application
