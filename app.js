@@ -2,11 +2,14 @@ const express = require('express');
 const morgan = require('morgan');
 const cors = require('cors');
 const cookieParser = require('cookie-parser');
+const swaggerjsdoc = require('swagger-jsdoc');
+const swaggerui = require('swagger-ui-express');
 
 const loadsRoutes = require('./routes/loadsRouter');
 const userRoutes = require('./routes/userRouter');
 const adminRoutes = require('./routes/adminRouter');
 const errorController = require('./controllers/errorController');
+
 const AppError = require('./utils/appError');
 const reviewRoutes = require('./routes/reviewRouter');
 const carRoutes = require('./routes/carRouter');
@@ -47,10 +50,40 @@ app.use('/api/v1/ticket', ticketRoutes);
 app.use('/api/v1/booker', bookerRoutes);
 app.use('/api/v1/teamlead', teamleadRoutes);
 
+const options = {
+  definition: {
+    openapi: '3.0.0',
+    info: {
+      title: 'TRAUXIT-API',
+      version: '1.0',
+      description: 'Trauxit Freight application api.',
+      license: {
+        name: '© 2022 TRAUXIT LLC',
+      },
+      contact: {
+        name: 'Trauxit',
+        phone: '+1 317-702-6298',
+        email: 'support@trauxit.com',
+      },
+    },
+    servers: [
+      {
+        url: 'http://localhost:3000/api-docs',
+      },
+    ],
+  },
+  // Define the paths to your API route files in the 'apis' property.
+  apis: ['./routes/*.js', './models/*.js'], // Replace with the actual path to your API route files.
+};
+
+const swaggerSpec = swaggerjsdoc(options);
+console.log(swaggerSpec);
+console.log(swaggerSpec);
+app.use('/api-docs', swaggerui.serve, swaggerui.setup(swaggerSpec));
+
 app.all('*', (req, res, next) => {
   next(new AppError(`Can't find ${req.originalUrl} on this server!!`, 404));
 });
-
 app.use(errorController);
 
 module.exports = app;

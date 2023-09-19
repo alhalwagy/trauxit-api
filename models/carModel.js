@@ -1,3 +1,30 @@
+/**
+ * @swagger
+ * components:
+ *   schemas:
+ *     Car:
+ *       type: object
+ *       properties:
+ *         carrierId:
+ *           type: string
+ *           description: The ID of the carrier associated with the car (reference to User model).
+ *         USDot:
+ *           type: number
+ *           description: USDot number of the car (required and unique).
+ *         type:
+ *           type: string
+ *           description: Type of the car (required).
+ *         maxWeight:
+ *           type: number
+ *           description: Maximum weight of the car (required).
+ *       required:
+ *         - USDot
+ *         - type
+ *         - maxWeight
+ */
+
+// Your other Swagger documentation annotations for routes can go here
+
 const mongoose = require('mongoose');
 
 const User = require('./carModel');

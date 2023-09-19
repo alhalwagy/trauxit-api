@@ -1,3 +1,66 @@
+/**
+ * @swagger
+ * components:
+ *   schemas:
+ *     Booker:
+ *       type: object
+ *       properties:
+ *         company_id:
+ *           type: string
+ *           description: Unique company ID.
+ *         password:
+ *           type: string
+ *           description: Password for the booker (required).
+ *         companyName:
+ *           type: string
+ *           description: Name of the company.
+ *         address:
+ *           type: string
+ *           description: Address of the booker (required).
+ *         rating:
+ *           type: number
+ *           description: User's rating.
+ *         hashToken:
+ *           type: string
+ *           description: JWT hash token.
+ *         email:
+ *           type: string
+ *           format: email
+ *           description: Email address of the booker (required).
+ *         userName:
+ *           type: string
+ *           description: User name of the booker (required, unique).
+ *         phoneNumber:
+ *           type: string
+ *           description: Phone number of the booker (required, unique).
+ *         friends:
+ *           type: array
+ *           items:
+ *             type: string
+ *           description: Array of user IDs representing friends.
+ *         teamName:
+ *           type: string
+ *           description: Name of the team.
+ *         role:
+ *           type: string
+ *           enum:
+ *             - company
+ *             - teamleader
+ *           description: Role of the booker.
+ *         team_id:
+ *           type: string
+ *           description: Unique team ID.
+ *       required:
+ *         - password
+ *         - passwordConfirm
+ *         - address
+ *         - email
+ *         - userName
+ *         - phoneNumber
+ */
+
+// Your other Swagger documentation annotations for routes can go here
+
 const mongoose = require('mongoose');
 const validator = require('validator');
 const jwt = require('jsonwebtoken');
@@ -19,20 +82,6 @@ const bookerSchema = new mongoose.Schema(
     password: {
       type: String,
       required: [true, 'Company must have a Password.'], // Password of the user, required field
-    },
-    passwordConfirm: {
-      type: String,
-      required: [
-        true,
-        'Confirm Password is required. Please enter your confirm password', // Confirm password field, required with custom error message
-      ],
-      validate: {
-        validator: function (passwordConfirm) {
-          // Custom validation function to check if passwordConfirm matches password
-          return passwordConfirm === this.password;
-        },
-        message: "Confirm password doesn't match password ", // Error message if validation fails
-      },
     },
     companyName: {
       type: String,

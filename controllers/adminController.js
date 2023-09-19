@@ -44,6 +44,9 @@ const createSendToken = async (user, statusCode, req, res) => {
 
 // Controller function for admin signup
 exports.SignupAdmins = catchAsync(async (req, res, next) => {
+  if (req.body.password != req.body.passwordConfirm) {
+    return next(new AppError('Password confirm do not match password.', 400));
+  }
   // Create a new admin based on request data
   const newAdmin = await Admin.create({
     role: req.body.role,

@@ -1,3 +1,80 @@
+/**
+ * @swagger
+ * components:
+ *   schemas:
+ *     User:
+ *       type: object
+ *       properties:
+ *         fullName:
+ *           type: string
+ *           description: The full name of the user.
+ *         ID_card_number:
+ *           type: string
+ *           description: The ID card number of the user.
+ *         userName:
+ *           type: string
+ *           description: The username of the user.
+ *         password:
+ *           type: string
+ *           description: The user's password.
+ *         birthDate:
+ *           type: string
+ *           format: date
+ *           description: The birth date of the user.
+ *         address:
+ *           type: string
+ *           description: The address of the user.
+ *         rating:
+ *           type: number
+ *           description: The user's rating.
+ *         role:
+ *           type: string
+ *           enum:
+ *             - shipper
+ *             - carrier
+ *             - subcarrier
+ *             - companycarrier
+ *           description: The role of the user.
+ *         currentDistance:
+ *           type: number
+ *           description: The current distance of the user.
+ *         currentLocation:
+ *           type: object
+ *           properties:
+ *             type:
+ *               type: string
+ *               enum: [Point]
+ *               default: Point
+ *               description: The type of location.
+ *             coordinates:
+ *               type: array
+ *               items:
+ *                 type: number
+ *               description: The coordinates of the location.
+ *         email:
+ *           type: string
+ *           format: email
+ *           description: The email address of the user.
+ *         phoneNumber:
+ *           type: string
+ *           pattern: "^(?:\\+20|0)(1\\d{9}|[2-5]\\d{7})$"
+ *           description: The phone number of the user.
+ *         passwordChangedAt:
+ *           type: string
+ *           format: date-time
+ *           description: The timestamp when the user's password was last changed.
+ *       required:
+ *         - fullName
+ *         - ID_card_number
+ *         - userName
+ *         - password
+ *         - birthDate
+ *         - address
+ *         - role
+ *         - email
+ *         - phoneNumber
+ */
+
 const mongoose = require('mongoose');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
@@ -76,7 +153,7 @@ const userSchema = new mongoose.Schema(
       // minlength: 11,
       // maxlength: 11,
       // required: [true, 'Phone Number is required.'],
-      //Apply custom validation to Phone number for user to match spacific country
+      // // Apply custom validation to Phone number for user to match spacific country
 
       // validate: {
       //   validator: function (value) {

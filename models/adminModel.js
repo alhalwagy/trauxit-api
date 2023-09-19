@@ -1,3 +1,40 @@
+/**
+ * @swagger
+ * components:
+ *   schemas:
+ *     Admin:
+ *       type: object
+ *       properties:
+ *         _id:
+ *           type: string
+ *           description: The unique identifier for an admin.
+ *         fullName:
+ *           type: string
+ *           description: Full name of the admin.
+ *         userName:
+ *           type: string
+ *           description: User name of the admin.
+ *         birthDate:
+ *           type: string
+ *           format: date
+ *           description: Birth date of the admin (optional).
+ *         role:
+ *           type: string
+ *           enum: ['head admin', 'admin', 'supporter']
+ *           description: Role of the admin.
+ *         email:
+ *           type: string
+ *           format: email
+ *           description: Email address of the admin.
+ *       required:
+ *         - fullName
+ *         - userName
+ *         - password
+ *         - email
+ *         - role
+ */
+
+// Your other Swagger documentation annotations for routes can go here
 const mongoose = require('mongoose');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
@@ -17,11 +54,6 @@ const adminSchema = new mongoose.Schema(
       type: String,
       required: [true, 'Admin Must Have A Full Name.'], // Full name of the admin, required field
     },
-    email: {
-      type: String,
-      required: [true, 'Email IS Required.'], // Email of the admin, required field
-      unique: true, // Ensures that each email is unique in the database
-    },
     userName: {
       type: String,
       required: [true, 'Admin must have a unique user name.'], // User name of the admin, required field
@@ -31,27 +63,13 @@ const adminSchema = new mongoose.Schema(
       type: String,
       required: [true, 'Admin must have a Password.'], // Password of the admin, required field
     },
-    passwordConfirm: {
-      type: String,
-      required: [
-        true,
-        'Confirm Password is required. Please enter your confirm password', // Confirm password field, required with custom error message
-      ],
-      validate: {
-        validator: function (passwordConfirm) {
-          // Custom validation function to check if passwordConfirm matches password
-          return passwordConfirm === this.password;
-        },
-        message: "Confirm password doesn't match password ", // Error message if validation fails
-      },
-    },
-
     birthDate: {
       type: Date, // Birth date of the admin (optional)
     },
     role: {
       type: String,
       enum: ['head admin', 'admin', 'supporter'], // Role of the admin, limited to specific values
+      required: [true, 'admin or supporter must have role.'],
     },
     hashToken: String, // A field to store a token (e.g., for authentication)
 

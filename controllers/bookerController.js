@@ -49,6 +49,9 @@ const createSendToken = async (booker, statusCode, req, res) => {
 
 // Controller function for Company signup
 exports.signup = catchAsync(async (req, res, next) => {
+  if (req.body.password != req.body.passwordConfirm) {
+    return next(new AppError('Password confirm do not match password.', 400));
+  }
   if (!req.body.role) {
     return next(new AppError('role Must be in body', 400));
   }
