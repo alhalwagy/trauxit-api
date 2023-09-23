@@ -5,12 +5,11 @@ const cookieParser = require('cookie-parser');
 const swaggerjsdoc = require('swagger-jsdoc');
 const swaggerui = require('swagger-ui-express');
 
+const AppError = require('./utils/appError');
+const errorController = require('./controllers/errorController');
 const loadsRoutes = require('./routes/loadsRouter');
 const userRoutes = require('./routes/userRouter');
 const adminRoutes = require('./routes/adminRouter');
-const errorController = require('./controllers/errorController');
-
-const AppError = require('./utils/appError');
 const reviewRoutes = require('./routes/reviewRouter');
 const carRoutes = require('./routes/carRouter');
 const carrierRoutes = require('./routes/carrierRouter');
@@ -73,13 +72,12 @@ const options = {
     ],
   },
   // Define the paths to your API route files in the 'apis' property.
-  apis: ['./routes/*.js', './models/*.js'], // Replace with the actual path to your API route files.
+  apis: ['./routes/*.js', './models/*.js'], 
+  // Replace with the actual path to your API route files.
 };
 
 const swaggerSpec = swaggerjsdoc(options);
-console.log(swaggerSpec);
-console.log(swaggerSpec);
-app.use('/api-docs', swaggerui.serve, swaggerui.setup(swaggerSpec));
+app.use('/doc-api', swaggerui.serve, swaggerui.setup(swaggerSpec));
 
 app.all('*', (req, res, next) => {
   next(new AppError(`Can't find ${req.originalUrl} on this server!!`, 404));

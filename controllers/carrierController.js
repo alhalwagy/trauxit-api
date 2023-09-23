@@ -7,6 +7,7 @@ const User = require('../models/userModel'); // Import the User model
 const catchAsync = require('../utils/catchAsync');
 const Loads = require('../models/loadsModel');
 const Booker = require('../models/bookerModel');
+const Team = require('../models/teamleadModel');
 
 //get location for carriers
 exports.locationdectecd = catchAsync(async (req, res, next) => {
@@ -344,3 +345,13 @@ exports.getdroupedoutLoadsForCarrier = catchAsync(async (req, res, next) => {
     },
   });
 });
+
+// exports.assignCarrierToTeamlead = catchAsync(async (req, res, next) => {
+//   const { team_id, teamName, role } = req.body;
+
+//   req.body.team_id = team_id;
+//   req.body.teamName = teamName;
+//   req.body.role = 'teamleader';
+
+//   const newTeam = await Booker.create(req.body);
+// });

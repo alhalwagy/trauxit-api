@@ -269,8 +269,6 @@ exports.updateLoadsToInchecksp = catchAsync(async (req, res, next) => {
   });
 });
 
-
-
 //Update Load Status To On Road
 exports.updateLoadsToOnRoad = catchAsync(async (req, res, next) => {
   if (req.user.currentDistance < 1) {
@@ -298,7 +296,6 @@ exports.updateLoadsToOnRoad = catchAsync(async (req, res, next) => {
     });
   }
 });
-
 
 //Update Load Status To canceled
 exports.updateLoadsToCanceled = catchAsync(async (req, res, next) => {
@@ -328,7 +325,6 @@ exports.updateLoadsToCanceled = catchAsync(async (req, res, next) => {
     return next(new AppError('This Load is Not for You. ', 401));
   }
 });
-
 
 //Update Load Status To Completed
 exports.updateLoadsToCompleted = catchAsync(async (req, res, next) => {
@@ -372,7 +368,6 @@ exports.updateLoadsToCompleted = catchAsync(async (req, res, next) => {
   }
 });
 
-
 //For Admin
 exports.getAllLoads = catchAsync(async (req, res, next) => {
   const loads = await Loads.find({});
@@ -387,7 +382,6 @@ exports.getAllLoads = catchAsync(async (req, res, next) => {
     },
   });
 });
-
 
 //For Admin
 exports.updateLoads = catchAsync(async (req, res, next) => {
@@ -406,7 +400,6 @@ exports.updateLoads = catchAsync(async (req, res, next) => {
   });
 });
 
-
 //For Admin
 exports.getLoad = catchAsync(async (req, res, next) => {
   const load = await Loads.findById(req.params.id);
@@ -420,7 +413,6 @@ exports.getLoad = catchAsync(async (req, res, next) => {
     },
   });
 });
-
 
 //For Admin
 exports.deleteLoad = catchAsync(async (req, res, next) => {

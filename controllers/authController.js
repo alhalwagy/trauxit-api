@@ -1,5 +1,6 @@
 const { promisify } = require('util');
 const jwt = require('jsonwebtoken'); // Import JWT for token handling
+const crypto = require('crypto');
 
 const User = require('../models/userModel'); // Import the User model
 const AppError = require('../utils/appError'); // Import custom error handling utility
@@ -176,7 +177,6 @@ exports.protect = catchAsync(async (req, res, next) => {
       )
     );
   }
-
   // Set the user data in the request object and response locals
   req.user = freshUser;
   res.locals.user = freshUser;
@@ -248,5 +248,91 @@ exports.updateMyPassword = catchAsync(async (req, res, next) => {
   await userData.save();
   res.status(200).json({
     status: 'success',
+  });
+});
+
+exports.forgetPassword = catchAsync(async (req, res, next) => {
+  //get user ,check if exist
+  const user = await User.findOne({ email: req.body.email });
+
+  if (!user) {
+    return next(new AppError('No user found with this email', 404));
+  }
+  const randomNum = user.CreatePasswordResetCode();
+  await user.save({ validateBeforeSave: false });
+  console.log(user);
+
+  await sendEmail({
+    to: user.email,
+    subject: 'Your password reset code (valid for 10 minutes',
+    message: `
+Hi ${user.name}, \n
+Enter this code to complete the reset. \n
+${randomNum} \n
+Thanks for helping us keep your account secure. \n
+The e-commerce Team \n
+`,
+  });
+
+  res.status(200).json({
+    status: 'success',
+    message: 'Reset code passed to your mail, Please check your inbox mails',
+  });
+});
+
+exports.verifyResetCode = catchAsync(async (req, res, next) => {
+  hashedResetCode = crypto
+    .createHash('sha256')
+    .update(req.body.passwordRestCode)
+    .digest('hex');
+  console.log(hashedResetCode);
+  const user = await User.findOne({
+    passwordRestCode: hashedResetCode,
+    passwordRestExpires: { $gt: Date.now() },
+  });
+  console.log(user);
+  if (!user) {
+    return next(
+      new AppError(
+        'Invalid password Reset Code, check code from mail again!',
+        404
+      )
+    );
+  }
+  user.passwordRestIsused = true;
+  user.passwordRestCode = undefined;
+  user.passwordRestExpires = undefined;
+  user.save({ validateBeforeSave: false });
+
+  res.status(200).json({
+    status: 'success',
+  });
+});
+
+exports.resetPassword = catchAsync(async (req, res, next) => {
+  if (req.body.password != req.body.passwordConfirm) {
+    return next(new AppError('Password not match password confirm.', 404));
+  }
+  const user = await User.findOne({ email: req.body.email });
+  if (!user) {
+    return next(new AppError('No user found with this email', 404));
+  }
+
+  if (!user.passwordRestIsused) {
+    return next(
+      new AppError(
+        'Invalid password Reset Code, check code from mail again!',
+        404
+      )
+    );
+  }
+  user.password = req.body.password;
+  user.passwordConfirm = req.body.passwordConfirm;
+  user.passwordRestIsused = undefined;
+  user.passwordChangedAt = Date.now();
+  await user.save();
+  res.status(200).json({
+    status: 'success',
+    data: 'Password Updated !!',
   });
 });

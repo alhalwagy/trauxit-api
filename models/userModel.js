@@ -77,6 +77,8 @@
 
 const mongoose = require('mongoose');
 const jwt = require('jsonwebtoken');
+const crypto = require('crypto');
+
 const bcrypt = require('bcrypt');
 const slugify = require('slugify');
 const validator = require('validator');
@@ -94,13 +96,6 @@ const userSchema = new mongoose.Schema(
     fullName: {
       type: String,
       required: [true, 'User Must Have A Full Name.'], // Full name of the user, required field
-    },
-    ID_card_number: {
-      type: String,
-      required: true,
-      unique: true, // Ensures that each ID card number is unique in the database
-      // minlength: 14,
-      // maxlength: 14,
     },
     userName: {
       type: String,
@@ -165,6 +160,9 @@ const userSchema = new mongoose.Schema(
       // },
     },
     passwordChangedAt: Date,
+    passwordRestCode: String,
+    passwordRestExpires: Date,
+    passwordRestIsused: Boolean,
   },
   {
     timestamps: true, // Automatically adds createdAt and updatedAt timestamps to the document
@@ -237,6 +235,18 @@ userSchema.methods.checkPasswordChanged = function (JWTTimestamps) {
     return JWTTimestamps < changedTimestamps;
   }
   return false;
+};
+
+userSchema.methods.CreatePasswordResetCode = function () {
+  const randomNum = Math.floor(100000 + Math.random() * 900000).toString();
+  this.passwordRestCode = crypto
+    .createHash('sha256')
+    .update(randomNum)
+    .digest('hex');
+  console.log(new Date(Date.now()));
+  this.passwordRestExpires = Date.now() + 10 * 60 * 1000;
+  this.passwordRestIsused = false;
+  return randomNum;
 };
 
 // Create a User model using the userSchema

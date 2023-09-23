@@ -40,6 +40,7 @@ const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
 const slugify = require('slugify');
 const validator = require('validator');
+const crypto = require('crypto');
 
 // Function to sign a JSON Web Token (JWT) with user ID
 const signToken = (id) => {
@@ -84,6 +85,10 @@ const adminSchema = new mongoose.Schema(
       lowercase: true,
       validate: [validator.isEmail, 'please provide a valid email'],
     },
+    passwordChangedAt: Date,
+    passwordRestCode: String,
+    passwordRestExpires: Date,
+    passwordRestIsused: Boolean,
   },
   {
     timestamps: true, // Automatically adds createdAt and updatedAt timestamps to the document
@@ -132,6 +137,18 @@ adminSchema.methods.correctPassword = async function (
   userPassword
 ) {
   return await bcrypt.compare(candidatePassword, userPassword);
+};
+
+adminSchema.methods.CreatePasswordResetCode = function () {
+  const randomNum = Math.floor(100000 + Math.random() * 900000).toString();
+  this.passwordRestCode = crypto
+    .createHash('sha256')
+    .update(randomNum)
+    .digest('hex');
+
+  this.passwordRestExpires = Date.now() + 10 * 60 * 1000;
+  this.passwordRestIsused = false;
+  return randomNum;
 };
 
 // Create an Admin model using the adminSchema

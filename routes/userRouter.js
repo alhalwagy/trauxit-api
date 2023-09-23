@@ -67,10 +67,80 @@ const router = express.Router(); // Create an Express router
  *     responses:
  *       201:
  *         description: User signed up successfully.
- *       400:
- *         description: Bad Request - Invalid request or missing required fields.
- *       500:
- *         description: Internal Server Error.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: string
+ *                   description: Status of the response.
+ *                 token:
+ *                   type: string
+ *                   description: JWT token for authentication.
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     user:
+ *                       type: object
+ *                       properties:
+ *                         fullName:
+ *                           type: string
+ *                           description: The full name of the user.
+ *                         ID_card_number:
+ *                           type: string
+ *                           description: The ID card number of the user.
+ *                         userName:
+ *                           type: string
+ *                           description: The username of the user.
+ *                         birthDate:
+ *                           type: string
+ *                           description: The birth date of the user.
+ *                         address:
+ *                           type: string
+ *                           description: The address of the user.
+ *                         role:
+ *                           type: string
+ *                           description: The role of the user.
+ *                         email:
+ *                           type: string
+ *                           format: email
+ *                           description: The email address of the user.
+ *                         _id:
+ *                           type: string
+ *                           description: The user's unique identifier.
+ *                         createdAt:
+ *                           type: string
+ *                           description: The date and time when the user was created.
+ *                         updatedAt:
+ *                           type: string
+ *                           description: The date and time when the user was last updated.
+ *                         slug:
+ *                           type: string
+ *                           description: A unique slug for the user.
+ *                         __v:
+ *                           type: integer
+ *                           description: Version number of the user document.
+ *                 example:
+ *                   status: success
+ *                   token: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+ *                   data:
+ *                     user:
+ *                       fullName: Mahmoud Hok
+ *                       ID_card_number: "1234564732s7225"
+ *                       userName: hok303
+ *                       birthDate: "2001-02-21T22:00:00.000Z"
+ *                       address: Gamssa
+ *                       role: shipper
+ *                       currentLocation:
+ *                         type: Point
+ *                         coordinates: []
+ *                       email: a.haslwgy@trauxit.com
+ *                       _id: "650ad8082a8034b2c0939bd8"
+ *                       createdAt: "2023-09-20T11:31:20.980Z"
+ *                       updatedAt: "2023-09-20T11:31:25.600Z"
+ *                       slug: hok303
+ *                       __v: 0
  */
 
 router.route('/signup').post(authController.signupUser);
@@ -232,6 +302,9 @@ router
  *       description: Internal Server Error.
  */
 
+router.post('/forgetpassword', authController.forgetPassword);
+router.post('/verifyresetcode', authController.verifyResetCode);
+router.post('/resetpassword', authController.resetPassword);
 
 router.use('/:carrierId/reviews', reviewRouter);
 // Export the router for use in other parts of your application

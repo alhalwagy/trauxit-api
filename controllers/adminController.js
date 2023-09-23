@@ -1,8 +1,11 @@
 const jwt = require('jsonwebtoken');
 const { promisify } = require('util');
+const crypto = require('crypto');
+
 const AppError = require('../utils/appError'); // Import custom error handling utility
 const Admin = require('../models/adminModel'); // Import the Admin model
 const catchAsync = require('../utils/catchAsync');
+const sendEmail = require('../utils/email');
 
 // Function to sign a JSON Web Token (JWT) with user ID
 const signToken = (id) => {
@@ -133,12 +136,12 @@ exports.restrictTo =
 
 exports.login = catchAsync(async (req, res, next) => {
   // Check if email and password are provided in the request body
-  if (!req.body.password || !req.body.userName) {
+  if (!req.body.password || !req.body.email) {
     return next(new AppError('Please provide us by email and password', 400));
   }
 
   // Find a user by their username, including the password
-  const user = await Admin.findOne({ userName: req.body.userName }).select(
+  const user = await Admin.findOne({ email: req.body.email }).select(
     '+password'
   );
 
@@ -168,5 +171,93 @@ exports.logout = catchAsync(async (req, res, next) => {
 
   res.status(200).json({
     status: 'success',
+  });
+});
+
+exports.forgetPassword = catchAsync(async (req, res, next) => {
+  //get user ,check if exist
+  const admin = await Admin.findOne({ email: req.body.email });
+
+  if (!admin) {
+    return next(new AppError('No admin found with this email', 404));
+  }
+  const randomNum = admin.CreatePasswordResetCode();
+  console.log(randomNum);
+  await admin.save({ validateBeforeSave: false });
+  console.log(admin.passwordRestExpires);
+
+  await sendEmail({
+    to: admin.email,
+    subject: 'Your password reset code (valid for 10 minutes',
+    message: `
+Hi ${admin.fullName}, \n
+Enter this code to complete the reset. \n
+${randomNum} \n
+Thanks for helping us keep your account secure. \n
+The e-commerce Team \n
+`,
+  });
+
+  res.status(200).json({
+    status: 'success',
+    message: 'Reset code passed to your mail, Please check your inbox mails',
+  });
+});
+
+exports.verifyResetCode = catchAsync(async (req, res, next) => {
+  hashedResetCode = crypto
+    .createHash('sha256')
+    .update(req.body.passwordRestCode)
+    .digest('hex');
+
+  const admin = await Admin.findOne({
+    passwordRestCode: hashedResetCode,
+    passwordRestExpires: { $gt: Date.now() },
+  });
+  console.log('hashedResetCode:', hashedResetCode);
+  console.log('Current Time:', Date.now());
+  console.log(admin);
+  if (!admin) {
+    return next(
+      new AppError(
+        'Invalid password Reset Code, check code from mail again!',
+        404
+      )
+    );
+  }
+  admin.passwordRestIsused = true;
+  admin.passwordRestCode = undefined;
+  admin.passwordRestExpires = undefined;
+  admin.save({ validateBeforeSave: false });
+
+  res.status(200).json({
+    status: 'success',
+  });
+});
+
+exports.resetPassword = catchAsync(async (req, res, next) => {
+  if (req.body.password != req.body.passwordConfirm) {
+    return next(new AppError('Password not match password confirm.', 404));
+  }
+  const admin = await Admin.findOne({ email: req.body.email });
+  if (!admin) {
+    return next(new AppError('No admin found with this email', 404));
+  }
+
+  if (!admin.passwordRestIsused) {
+    return next(
+      new AppError(
+        'Invalid password Reset Code, check code from mail again!',
+        404
+      )
+    );
+  }
+  admin.password = req.body.password;
+  admin.passwordRestIsused = undefined;
+  admin.passwordChangedAt = Date.now();
+  await admin.save();
+  res.status(200).json({
+    status: 'success',
+    data: 'Password Updated !!',
   });
 });

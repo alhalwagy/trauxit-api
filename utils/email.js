@@ -12,20 +12,21 @@ const sendEmail = async (options) => {
       pass: '4X{A+Ilr#CiU',
     },
   });
-  const html = pug.renderFile(`${__dirname}/../views/welcome.pug`, {
-    fullName: this.fullName,
-    url: this.url,
-    subject: 'Welcome to Join Us.',
-  });
+  // const html = pug.renderFile(`${__dirname}/../views/welcome.pug`, {
+  //   fullName: this.fullName,
+  //   url: this.url,
+  //   subject: 'Welcome to Join Us.',
+  // });
   const mailOptions = {
     from: `TRAUXIT <${process.env.EMAIL_FROM}>`,
     to: options.to,
     subject: options.subject,
-    html,
-    text: htmlToText.htmlToText(html),
+    text: options.message,
+
+    // html,
+    // text: htmlToText.htmlToText(html),
   };
   await transport.sendMail(mailOptions);
 };
 
 module.exports = sendEmail;
- 
