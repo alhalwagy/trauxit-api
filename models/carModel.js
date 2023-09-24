@@ -23,7 +23,6 @@
  *         - maxWeight
  */
 
-// Your other Swagger documentation annotations for routes can go here
 
 const mongoose = require('mongoose');
 
@@ -45,7 +44,6 @@ const carSchema = new mongoose.Schema(
     },
     maxWeight: {
       type: Number,
-      required: [true, 'Max weight is Required'],
     },
   },
   {

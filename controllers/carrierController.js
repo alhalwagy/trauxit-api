@@ -1,13 +1,13 @@
 const bcrypt = require('bcrypt');
 const axios = require('axios');
 const crypto = require('crypto');
+const mongoose = require('mongoose');
 
 const AppError = require('../utils/appError'); // Import custom error handling utility
 const User = require('../models/userModel'); // Import the User model
 const catchAsync = require('../utils/catchAsync');
 const Loads = require('../models/loadsModel');
 const Booker = require('../models/bookerModel');
-const Team = require('../models/teamleadModel');
 
 //get location for carriers
 exports.locationdectecd = catchAsync(async (req, res, next) => {
@@ -346,12 +346,102 @@ exports.getdroupedoutLoadsForCarrier = catchAsync(async (req, res, next) => {
   });
 });
 
-// exports.assignCarrierToTeamlead = catchAsync(async (req, res, next) => {
-//   const { team_id, teamName, role } = req.body;
+exports.assignCarrierToTeamlead = catchAsync(async (req, res, next) => {
+  const user = await User.findOne({ email: req.user.email }).select(
+    '+password'
+  );
 
-//   req.body.team_id = team_id;
-//   req.body.teamName = teamName;
-//   req.body.role = 'teamleader';
+  // Check if the user exists and the provided password is correct
+  if (
+    !user ||
+    !(await user.correctPassword(req.body.password, user.password))
+  ) {
+    return next(new AppError('Incorrect password', 401));
+  }
+  const newTeam = await Booker.create({
+    team_id: req.body.team_id,
+    teamName: req.body.teamName,
+    role: 'teamleader',
+    phoneNumber: req.body.phoneNumber,
+    email: req.user.email,
+    userName: req.user.userName,
+    address: req.body.address,
+    password: req.body.password,
+  });
 
-//   const newTeam = await Booker.create(req.body);
-// });
+  await User.findByIdAndDelete(req.user.id);
+
+  res.status(200).json({
+    status: 'success',
+    data: {
+      newTeam,
+    },
+  });
+});
+
+exports.addfriend = catchAsync(async (req, res, next) => {
+  senderId = req.user.id;
+  const recipientId = req.body.recipientId;
+  const recipient = await User.findById(recipientId);
+
+  if (!senderId || !recipient) {
+    return next(new AppError('User Not Found', 404));
+  }
+  req.user.friends.push(recipientId);
+  await req.user.save();
+  res.status(200).json({
+    status: 'success',
+    message: 'Friend request sent.',
+  });
+});
+
+exports.acceptFriendReq = catchAsync(async (req, res, next) => {
+  const friendId = new mongoose.Types.ObjectId(req.body.friendId);
+  const friend = await User.findById(friendId);
+  console.log(friend.friends);
+  if (!friend) {
+    return next(new AppError('Friend Not Found', 404));
+  }
+
+  if (!friend.friends.includes(req.user.id)) {
+    return next(
+      new AppError('You Do not have a request friend from this user', 404)
+    );
+  }
+  req.user.friends.push(friendId);
+  await req.user.save();
+  res.status(200).json({
+    status: 'success',
+    message: 'Friend Request Accepted.',
+    data: {
+      user: req.user,
+    },
+  });
+});
+
+exports.rejectFriendReq = catchAsync(async (req, res, next) => {
+  const friendId = new mongoose.Types.ObjectId(req.body.friendId);
+  const friend = await User.findById(friendId);
+  console.log(friend.friends);
+  if (!friend) {
+    return next(new AppError('Friend Not Found', 404));
+  }
+
+  if (!friend.friends.includes(req.user.id)) {
+    return next(
+      new AppError('You Do not have a request friend from this user', 404)
+    );
+  }
+  await User.updateOne(
+    { _id: friendId }, // Filter the document based on its ID.
+    { $pull: { friends: req.user.id } },
+    {
+      new: true,
+      runValidators: false,
+    }
+  );
+  res.status(200).json({
+    status: 'success',
+    message: 'Friend Request Rejected.',
+  });
+});

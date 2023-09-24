@@ -1,0 +1,93 @@
+doctype html
+html(lang="en-US")
+  head
+    meta(content="text/html; charset=utf-8", http-equiv="Content-Type")
+    title Reset Password Email Template
+    meta(name="description", content="Reset Password Email Template.")
+    style(type="text/css").
+      a:hover {
+      text-decoration: underline !important;
+      }
+  body(marginheight="0", topmargin="0", marginwidth="0", style="margin: 0px; background-color: #f2f3f8;", leftmargin="0")
+    // 100% body table
+    table(cellspacing="0", border="0", cellpadding="0", width="100%", bgcolor="#f2f3f8", style="@import url(https://fonts.googleapis.com/css?family=Rubik:300,400,500,700|Open+Sans:300,400,600,700); font-family: 'Open Sans', sans-serif;")
+      tr
+        td
+          table(style="background-color: #f2f3f8; max-width:670px;  margin:0 auto;", width="100%", border="0", align="center", cellpadding="0", cellspacing="0")
+            tr
+              td(style="height:80px;") &amp;nbsp;
+            tr
+              td(style="text-align:center;")
+                a(href="https://rakeshmandal.com", title="logo", target="_blank")
+                  img(width="60", src="https://i.ibb.co/hL4XZp2/android-chrome-192x192.png", title="logo", alt="logo")
+            tr
+              td(style="height:20px;") &amp;nbsp;
+            tr
+              td
+                table(width="95%", border="0", align="center", cellpadding="0", cellspacing="0", style="max-width:670px;background:#fff; border-radius:3px; text-align:center;-webkit-box-shadow:0 6px 18px 0 rgba(0,0,0,.06);-moz-box-shadow:0 6px 18px 0 rgba(0,0,0,.06);box-shadow:0 6px 18px 0 rgba(0,0,0,.06);")
+                  tr
+                    td(style="height:40px;") &amp;nbsp;
+                  tr
+                    td(style="padding:0 35px;")
+                      h1(style="color:#1e1e2d; font-weight:500; margin:0;font-size:32px;font-family:'Rubik',sans-serif;")
+                        | You have
+                        | requested to reset your password
+                      span(<!DOCTYPE, html)
+                        html
+                          head
+                            style.
+                              body {
+                              font-family: Arial, sans-serif;
+                              background-color: #fff;
+                              text-align: center;
+                              }
+                              
+                              .container {
+                              width: 100%;
+                              max-width: 600px;
+                              margin: 0 auto;
+                              padding: 20px;
+                              }
+                              
+                              .header {
+                              background-color: #ff8201; /* Orange */
+                              color: #fff;
+                              padding: 20px 0;
+                              }
+                              
+                              .header h1 {
+                              font-size: 24px;
+                              }
+                              
+                              .content {
+                              background-color: #fff;
+                              padding: 20px;
+                              }
+                              
+                              .button {
+                              display: inline-block;
+                              background-color: #ff8201; /* Orange */
+                              color: #fff;
+                              padding: 10px 20px;
+                              text-decoration: none;
+                              border-radius: 5px;
+                              margin-top: 20px;
+                              }
+                              
+                              .footer {
+                              background-color: #ff8201; /* Orange */
+                              color: #fff;
+                              padding: 10px 0;
+                              }
+                          body
+                            .container
+                              .header
+                                h1 Password Reset
+                              .content
+                                p Hello,
+                                p We received a request to reset your password. Please use the following reset code:
+                                h2 Your Reset Code: 
+                                  strong #{rondomNum}
+                                p If you did not request this password reset, please ignore this email. The code is valid for a limited time.
+                              .footer
+                                p &amp;copy; 2023 YourCompany. All rights reserved.

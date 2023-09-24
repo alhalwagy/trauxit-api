@@ -8,9 +8,6 @@
  *         fullName:
  *           type: string
  *           description: The full name of the user.
- *         ID_card_number:
- *           type: string
- *           description: The ID card number of the user.
  *         userName:
  *           type: string
  *           description: The username of the user.
@@ -117,7 +114,7 @@ const userSchema = new mongoose.Schema(
     role: {
       required: [true, 'User must have a role'], // User's role, required field
       type: String,
-      enum: ['shipper', 'carrier', 'subcarrier', 'companycarrier'], // User's role is limited to specific values ('shipper','carrier','small-carrier')
+      enum: ['shipper', 'carrier', 'subcarrier'], // User's role is limited to specific values ('shipper','carrier','small-carrier')
     },
     // To check the given token same as database token
     hashToken: {
@@ -145,24 +142,19 @@ const userSchema = new mongoose.Schema(
     },
     phoneNumber: {
       type: String,
-      // minlength: 11,
-      // maxlength: 11,
-      // required: [true, 'Phone Number is required.'],
-      // // Apply custom validation to Phone number for user to match spacific country
-
-      // validate: {
-      //   validator: function (value) {
-      //     // Regular expression for validating Egyptian phone numbers
-      //     const egyptianPhoneNumberRegex = /^(?:\+20|0)(1\d{9}|[2-5]\d{7})$/;
-      //     return egyptianPhoneNumberRegex.test(value);
-      //   },
-      //   message: 'Invalid Egyptian phone number',
-      // },
     },
     passwordChangedAt: Date,
     passwordRestCode: String,
     passwordRestExpires: Date,
     passwordRestIsused: Boolean,
+    ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////
+    friends: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User',
+      },
+    ],
   },
   {
     timestamps: true, // Automatically adds createdAt and updatedAt timestamps to the document
@@ -253,3 +245,4 @@ userSchema.methods.CreatePasswordResetCode = function () {
 const User = mongoose.model('User', userSchema);
 
 module.exports = User; // Export the User model
+

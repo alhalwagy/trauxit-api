@@ -67,17 +67,17 @@ const options = {
     },
     servers: [
       {
-        url: 'http://localhost:3000/api-docs',
+        url: 'http://localhost:3000/',
       },
     ],
   },
   // Define the paths to your API route files in the 'apis' property.
-  apis: ['./routes/*.js', './models/*.js'], 
+  apis: ['./routes/*.js', './models/*.js'],
   // Replace with the actual path to your API route files.
 };
 
 const swaggerSpec = swaggerjsdoc(options);
-app.use('/doc-api', swaggerui.serve, swaggerui.setup(swaggerSpec));
+app.use('/', swaggerui.serve, swaggerui.setup(swaggerSpec));
 
 app.all('*', (req, res, next) => {
   next(new AppError(`Can't find ${req.originalUrl} on this server!!`, 404));

@@ -372,5 +372,168 @@ router
     adminController.restrictTo('admin'),
     carrierController.deleteCarriers
   );
+/**
+ * @swagger
+ * /add-friend:
+ *   post:
+ *     summary: Add Friend
+ *     description: Add a new friend.
+ *     tags:
+ *       - Carriers
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               recipientId:
+ *                 type: string
+ *                 example: '650adcf6a9e89aed75cac801'
+ *             required:
+ *               - recipientId
+ *     responses:
+ *       200:
+ *         description: Friend added successfully.
+ *       401:
+ *         description: Unauthorized. User is not authenticated.
+ *       403:
+ *         description: Forbidden. User does not have the necessary permissions.
+ *       404:
+ *         description: User not found.
+ */
+
+router
+  .route('/add-friend')
+  .post(
+    authController.protect,
+    authController.restrictTo('carrier'),
+    carrierController.addfriend
+  );
+/**
+ * @swagger
+ * /accept-friend-request:
+ *   post:
+ *     summary: Accept Friend Request
+ *     description: Accept a friend request from another user.
+ *     tags:
+ *       - Carriers
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               friendId:
+ *                 type: string
+ *                 example: '650add5fa9e89aed75cac804'
+ *             required:
+ *               - friendId
+ *     responses:
+ *       200:
+ *         description: Friend request accepted successfully.
+ *       401:
+ *         description: Unauthorized. User is not authenticated.
+ *       403:
+ *         description: Forbidden. User does not have the necessary permissions.
+ *       404:
+ *         description: User not found.
+ */
+
+router
+  .route('/accept-friend-request')
+  .post(
+    authController.protect,
+    authController.restrictTo('carrier'),
+    carrierController.acceptFriendReq
+  );
+/**
+ * @swagger
+ * /reject-friend-request:
+ *   post:
+ *     summary: Reject Friend Request
+ *     description: Reject a friend request from another user.
+ *     tags:
+ *       - Carriers
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               friendId:
+ *                 type: string
+ *                 example: '650add5fa9e89aed75cac804'
+ *             required:
+ *               - friendId
+ *     responses:
+ *       200:
+ *         description: Friend request rejected successfully.
+ *       401:
+ *         description: Unauthorized. User is not authenticated.
+ *       403:
+ *         description: Forbidden. User does not have the necessary permissions.
+ *       404:
+ *         description: User not found.
+ */
+router
+  .route('/reject-friend-request')
+  .post(
+    authController.protect,
+    authController.restrictTo('carrier'),
+    carrierController.rejectFriendReq
+  );
+/**
+ * @swagger
+ * /toteam-leader:
+ *   post:
+ *     summary: Assign Carrier to Team Lead
+ *     description: Assign a carrier to a team lead.
+ *     tags:
+ *       - Carriers
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               team_id:
+ *                 type: string
+ *                 example: '1234567'
+ *               teamName:
+ *                 type: string
+ *                 example: 'traxuit'
+ *               address:
+ *                 type: string
+ *                 example: 'Gamssa'
+ *               phoneNumber:
+ *                 type: string
+ *                 example: '12345638408'
+ *               password:
+ *                 type: string
+ *                 example: '12345'
+ *     responses:
+ *       200:
+ *         description: Successfully assigned carrier to team lead.
+ *       401:
+ *         description: Unauthorized. User is not authenticated.
+ *       403:
+ *         description: Forbidden. User does not have the necessary permissions.
+ */
+
+router
+  .route('/toteam-leader')
+  .post(
+    authController.protect,
+    authController.restrictTo('carrier'),
+    carrierController.assignCarrierToTeamlead
+  );
 
 module.exports = router;

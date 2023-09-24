@@ -21,9 +21,6 @@ const router = express.Router(); // Create an Express router
  *               fullName:
  *                 type: string
  *                 description: The full name of the user.
- *               ID_card_number:
- *                 type: string
- *                 description: The ID card number of the user.
  *               userName:
  *                 type: string
  *                 description: The username of the user.
@@ -55,7 +52,6 @@ const router = express.Router(); // Create an Express router
  *                 description: The phone number of the user.
  *             example:
  *               fullName: Mahmoud Hok
- *               ID_card_number: '12345647327325'
  *               userName: hok38
  *               password: '12345'
  *               passwordConfirm: '12345'
@@ -262,6 +258,107 @@ router
 
 /**
  * @swagger
+ * /forgetpassword:
+ *   post:
+ *     summary: Request Password Reset
+ *     description: Request a password reset.
+ *     tags:
+ *       - Authentication
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               email:
+ *                 type: string
+ *                 example: 'a.halwgy@trauxit.com'
+ *             required:
+ *               - email
+ *     responses:
+ *       200:
+ *         description: Password reset request has been sent successfully.
+ *       400:
+ *         description: Bad Request. Invalid email or request not sent.
+ *       404:
+ *         description: User not found
+ */
+
+/**
+ * @swagger
+ * /verifyresetcode:
+ *   post:
+ *     summary: Verify Password Reset Code
+ *     description: Verify a password reset code.
+ *     tags:
+ *       - Authentication
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               passwordResetCode:
+ *                 type: string
+ *                 example: '690621'
+ *             required:
+ *               - passwordResetCode
+ *     responses:
+ *       200:
+ *         description: Password reset code is valid.
+ *       400:
+ *         description: Bad Request. Invalid password reset code.
+ *       404:
+ *         description: User not found
+ */
+
+/**
+ * @swagger
+ * /resetpassword:
+ *   post:
+ *     summary: Reset Password
+ *     description: Reset the password using a valid reset code.
+ *     tags:
+ *       - Authentication
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               email:
+ *                 type: string
+ *                 example: 'a.halwgy@trauxit.com'
+ *               password:
+ *                 type: string
+ *                 example: '1234567'
+ *               passwordConfirm:
+ *                 type: string
+ *                 example: '1234567'
+ *             required:
+ *               - email
+ *               - password
+ *               - passwordConfirm
+ *     responses:
+ *       200:
+ *         description: Password has been successfully reset.
+ *       400:
+ *         description: Bad Request. Invalid password reset code or password.
+ *       404:
+ *         description: User not found
+ */
+router.post('/forgetpassword', authController.forgetPassword);
+router.post('/verifyresetcode', authController.verifyResetCode);
+router.post('/resetpassword', authController.resetPassword);
+
+/**
+ * @swagger
  * /users/{carrierId}/reviews:
  *   summary: Manage reviews for a specific carrier.
  *   tags:
@@ -301,10 +398,6 @@ router
  *     500:
  *       description: Internal Server Error.
  */
-
-router.post('/forgetpassword', authController.forgetPassword);
-router.post('/verifyresetcode', authController.verifyResetCode);
-router.post('/resetpassword', authController.resetPassword);
 
 router.use('/:carrierId/reviews', reviewRouter);
 // Export the router for use in other parts of your application

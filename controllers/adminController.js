@@ -194,7 +194,7 @@ Hi ${admin.fullName}, \n
 Enter this code to complete the reset. \n
 ${randomNum} \n
 Thanks for helping us keep your account secure. \n
-The e-commerce Team \n
+The Trauxit Group \n
 `,
   });
 

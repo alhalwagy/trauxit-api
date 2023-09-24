@@ -64,13 +64,11 @@ const router = express.Router();
  *         description: Internal Server Error.
  */
 
-router
-  .route('/signup')
-  .post(
-    // adminController.protect,
-    // adminController.restrictTo('head admin'),
-    adminController.SignupAdmins
-  );
+router.route('/signup').post(
+  // adminController.protect,
+  // adminController.restrictTo('head admin'),
+  adminController.SignupAdmins
+);
 
 /**
  * @swagger
@@ -123,6 +121,103 @@ router.route('/login').post(adminController.login);
  */
 
 router.route('/logout').post(adminController.protect, adminController.logout);
+/**
+ * @swagger
+ * /forgetpassword:
+ *   post:
+ *     summary: Request Password Reset
+ *     description: Request a password reset.
+ *     tags:
+ *       - Admin
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               email:
+ *                 type: string
+ *                 example: 'a.halwgy@trauxit.com'
+ *             required:
+ *               - email
+ *     responses:
+ *       200:
+ *         description: Password reset request has been sent successfully.
+ *       400:
+ *         description: Bad Request. Invalid email or request not sent.
+ *       404:
+ *         description: User not found
+ */
+
+/**
+ * @swagger
+ * /verifyresetcode:
+ *   post:
+ *     summary: Verify Password Reset Code
+ *     description: Verify a password reset code.
+ *     tags:
+ *       - Admin
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               passwordResetCode:
+ *                 type: string
+ *                 example: '690621'
+ *             required:
+ *               - passwordResetCode
+ *     responses:
+ *       200:
+ *         description: Password reset code is valid.
+ *       400:
+ *         description: Bad Request. Invalid password reset code.
+ *       404:
+ *         description: User not found
+ */
+
+/**
+ * @swagger
+ * /resetpassword:
+ *   post:
+ *     summary: Reset Password
+ *     description: Reset the password using a valid reset code.
+ *     tags:
+ *       - Admin
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               email:
+ *                 type: string
+ *                 example: 'a.halwgy@trauxit.com'
+ *               password:
+ *                 type: string
+ *                 example: '1234567'
+ *               passwordConfirm:
+ *                 type: string
+ *                 example: '1234567'
+ *             required:
+ *               - email
+ *               - password
+ *               - passwordConfirm
+ *     responses:
+ *       200:
+ *         description: Password has been successfully reset.
+ *       400:
+ *         description: Bad Request. Invalid password reset code or password.
+ *       404:
+ *         description: User not found
+ */
 
 router.post('/forgetpassword', adminController.forgetPassword);
 router.post('/verifyresetcode', adminController.verifyResetCode);
