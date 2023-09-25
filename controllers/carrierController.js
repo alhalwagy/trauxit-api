@@ -13,7 +13,7 @@ const Booker = require('../models/bookerModel');
 exports.locationdectecd = catchAsync(async (req, res, next) => {
   const latlng = req.params.latlng;
   const unit = req.params.unit;
-  const [lat, lng] = latlng.split(',');
+  const [lng, lat] = latlng.split(',');
   if (!lat || !lng) {
     next(
       new AppError('There is no latitude or longitude in the request!', 400)
@@ -126,9 +126,11 @@ exports.calcDistFromCarrierToShopping = catchAsync(async (req, res, next) => {
 
   let userCoordinates;
   const load = await Loads.findById(req.params.idload);
-  if (load.idCarrier.toString() != req.user.id) {
-    return next(new AppError('This Load Not For you.'), 401);
+  console.log(load);
+  if (!load.idCarrier) {
+    return next(new AppError('This Load Not For you.'));
   }
+
   if (!(load.status === 'Booked' || load.status === 'inroads')) {
     return next(new AppError('This Load Not For Shipping Now.'), 400);
   }
@@ -142,14 +144,16 @@ exports.calcDistFromCarrierToShopping = catchAsync(async (req, res, next) => {
 
   // Coordinates of the two points
   const point1 = {
-    lat: userCoordinates[0],
-    lon: userCoordinates[1],
+    lat: userCoordinates[1],
+    lon: userCoordinates[0],
   };
-  console.log(req.user.currentLocation.coordinates);
+
   const point2 = {
-    lat: req.user.currentLocation.coordinates[1] * 1,
-    lon: req.user.currentLocation.coordinates[0] * 1,
+    lat: req.user.currentLocation.coordinates[0] * 1,
+    lon: req.user.currentLocation.coordinates[1] * 1,
   };
+  console.log(point1);
+  console.log(point2);
 
   const travelMode = 'truck';
   // TomTom API endpoint for calculating distance

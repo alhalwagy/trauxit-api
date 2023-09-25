@@ -146,8 +146,8 @@ exports.getLoadWithin = catchAsync(async (req, res, next) => {
       $geoWithin: {
         $centerSphere: [
           [
-            req.user.currentLocation.coordinates[0],
             req.user.currentLocation.coordinates[1],
+            req.user.currentLocation.coordinates[0],
           ],
           raduis,
         ],
@@ -178,12 +178,12 @@ exports.getDistances = catchAsync(async (req, res, next) => {
     const apiKey = process.env.API_KEY_TOMTOM;
     userCoordinates = el.PickupLocation.coordinates;
     const point1 = {
-      lat: userCoordinates[0],
-      lon: userCoordinates[1],
+      lat: userCoordinates[1],
+      lon: userCoordinates[0],
     };
     const point2 = {
-      lat: req.user.currentLocation.coordinates[1] * 1,
-      lon: req.user.currentLocation.coordinates[0] * 1,
+      lat: req.user.currentLocation.coordinates[0] * 1,
+      lon: req.user.currentLocation.coordinates[1] * 1,
     };
     const travelMode = 'truck';
     const apiUrl = `https://api.tomtom.com/routing/1/calculateRoute/${point1.lat},${point1.lon}:${point2.lat},${point2.lon}/json?travelMode=${travelMode}`;

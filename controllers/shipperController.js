@@ -98,10 +98,13 @@ exports.createShipmentFromAToB = catchAsync(async (req, res, next) => {
 
   // Coordinates of the two points
   const point1 = {
-    lat: specifiedPointCoordinates[0],
-    lon: specifiedPointCoordinates[1],
+    lat: specifiedPointCoordinates[1],
+    lon: specifiedPointCoordinates[0],
   };
-  const point2 = { lat: userCoordinates[0], lon: userCoordinates[1] };
+  const point2 = { lat: userCoordinates[1], lon: userCoordinates[0] };
+
+  console.log(point1);
+  console.log(point2);
 
   // TomTom API endpoint for calculating distance
   const apiUrl = `https://api.tomtom.com/routing/1/calculateRoute/${point1.lat},${point1.lon}:${point2.lat},${point2.lon}/json`;
@@ -134,7 +137,6 @@ exports.createShipmentFromAToB = catchAsync(async (req, res, next) => {
       load.shipmentDistance = distance;
       load.save({ validateBeforeSave: false });
 
-
       res.status(200).json({
         status: 'success',
         data: {
@@ -144,4 +146,3 @@ exports.createShipmentFromAToB = catchAsync(async (req, res, next) => {
       });
     });
 });
-

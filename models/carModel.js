@@ -23,7 +23,6 @@
  *         - maxWeight
  */
 
-
 const mongoose = require('mongoose');
 
 const User = require('./carModel');
@@ -34,7 +33,7 @@ const carSchema = new mongoose.Schema(
       ref: 'User',
     },
     USDot: {
-      type: Number,
+      type: String,
       required: [true, 'USDot is Required'],
       unique: true,
     },
