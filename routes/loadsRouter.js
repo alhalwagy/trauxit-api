@@ -5,6 +5,7 @@ const loadController = require('../controllers/loadsController');
 const adminController = require('../controllers/adminController');
 const notificationController = require('../controllers/notificationController');
 const carrierController = require('../controllers/carrierController');
+const shipperController = require('../controllers/shipperController');
 const router = express.Router();
 
 //Route Add & Get Loads From Shipper
@@ -112,7 +113,8 @@ router
   .post(
     authController.protect,
     authController.restrictTo('shipper'),
-    loadController.createLoad
+    loadController.createLoad,
+    shipperController.createShipmentFromAToB
   )
   .get(
     authController.protect,
@@ -197,6 +199,25 @@ router
  *     responses:
  *       '201':
  *         description: A new load has been created by the admin.
+ *         content:
+ *           application/json:
+ *             example:
+ *               status: success
+ *               message: Load created successfully
+ *               data:
+ *                 typeLoads: "electronics"
+ *                 nameLoads: "laptop"
+ *                 Weight: 20.5
+ *                 PickupLocation:
+ *                   description: "Description of pickup location"
+ *                   type: "Point"
+ *                   coordinates: [-111.919373, 40.622035]
+ *                   address: "224 Banff Ave,Cinnaa, Cairo, Egypt"
+ *                 DropoutLocation:
+ *                   description: "Description of dropout location"
+ *                   type: "Point"
+ *                   coordinates: [-111.413388, 40.489172]
+ *                   address: "224 Suez Canal St, Mansoura, Dakahlia, Egypt"
  *       '401':
  *         description: Unauthorized access.
  *       '403':

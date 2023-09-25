@@ -21,14 +21,17 @@ exports.createLoad = catchAsync(async (req, res, next) => {
       path: 'idShipper',
       select: 'fullName userName role address companyName',
     });
+    req.load = load;
+    console.log(req.load);
 
+    next();
     // Send a JSON response with the created load data
-    return res.status(200).json({
-      status: 'success',
-      data: {
-        load,
-      },
-    });
+    // return res.status(200).json({
+    //   status: 'success',
+    //   data: {
+    //     load,
+    //   },
+    // });
   }
 
   // If the request is made by an admin
@@ -47,14 +50,16 @@ exports.createLoad = catchAsync(async (req, res, next) => {
       path: 'idShipper',
       select: 'fullName userName role address companyName',
     });
-
+    req.load = load;
+    console.log(req.load);
+    next();
     // Send a JSON response with the created load data
-    res.status(201).json({
-      status: 'success',
-      data: {
-        load,
-      },
-    });
+    // res.status(201).json({
+    //   status: 'success',
+    //   data: {
+    //     load,
+    //   },
+    // });
   }
 });
 
@@ -167,7 +172,7 @@ exports.getLoadWithin = catchAsync(async (req, res, next) => {
 
 //Get Distance between carrier and all available loads
 exports.getDistances = catchAsync(async (req, res, next) => {
-  const unit = req.params.unit;
+  const unit = 'mi';
   const multiplier = unit === 'mi' ? 0.000621371192 : 0.001;
 
   let userCoordinates;

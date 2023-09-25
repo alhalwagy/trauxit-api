@@ -87,10 +87,10 @@ exports.createShipper = catchAsync(async (req, res, next) => {
 });
 
 exports.createShipmentFromAToB = catchAsync(async (req, res, next) => {
-  const load = await Loads.findById(req.params.idload);
+  const load = await Loads.findById(req.load._id);
   const specifiedPointCoordinates = load.DropoutLocation.coordinates; // Assuming PickupLocation is the correct field name
   const userCoordinates = load.PickupLocation.coordinates;
-  const unit = 'km';
+  const unit = 'mi';
   const multiplier = unit === 'mi' ? 0.000621371192 : 0.001;
 
   // Replace 'YOUR_API_KEY' with your actual TomTom API key
@@ -103,17 +103,20 @@ exports.createShipmentFromAToB = catchAsync(async (req, res, next) => {
   };
   const point2 = { lat: userCoordinates[1], lon: userCoordinates[0] };
 
-  console.log(point1);
-  console.log(point2);
-
+  const deptTime = load.departureTime.toISOString();
+  console.log(deptTime);
   // TomTom API endpoint for calculating distance
-  const apiUrl = `https://api.tomtom.com/routing/1/calculateRoute/${point1.lat},${point1.lon}:${point2.lat},${point2.lon}/json`;
+  const travelMode = 'truck';
+  const apiUrl = `https://api.tomtom.com/routing/1/calculateRoute/${point1.lat},${point1.lon}:${point2.lat},${point2.lon}/json?travelMode=${travelMode}`;
 
   // Make the API request
   axios
     .get(apiUrl, {
       params: {
         key: apiKey,
+        instructionsType: 'text',
+        computeTravelTimeFor: 'all',
+        // departureTime: deptTime,
       },
     })
     .then((response) => {
@@ -126,16 +129,18 @@ exports.createShipmentFromAToB = catchAsync(async (req, res, next) => {
         );
       }
       const data = response.data;
+      console.log(data.routes[0].summary);
       // Extract the distance in meters from the response
       const distanceInMeters = data.routes[0].summary.lengthInMeters;
       // Convert the distance to kilometers
-      const distanceInKilometers = distanceInMeters / 1000;
+      const distanceInKilometers = distanceInMeters * multiplier;
       const distance = distanceInKilometers.toFixed(2);
       let priceLoads = distance * 1.5;
       priceLoads = priceLoads.toFixed(2);
+      load.summary = data.routes[0].summary;
       load.priceLoads = priceLoads;
       load.shipmentDistance = distance;
-      load.save({ validateBeforeSave: false });
+      load.dataSummary = load.save({ validateBeforeSave: false });
 
       res.status(200).json({
         status: 'success',

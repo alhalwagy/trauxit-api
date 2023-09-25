@@ -172,6 +172,22 @@ const loadsSchema = new mongoose.Schema(
       description: String,
     },
     shipmentDistance: Number,
+    departureTime: {
+      type: Date,
+      required: [true, 'Load must have departureTime. '],
+      default: Date.now(),
+    },
+    summary: {
+      lengthInMeters: Number,
+      travelTimeInSeconds: Number,
+      trafficDelayInSeconds: Number,
+      trafficLengthInMeters: Number,
+      departureTime: String, // You can keep it as a string or change it to Date type if needed
+      arrivalTime: String, // You can keep it as a string or change it to Date type if needed
+      noTrafficTravelTimeInSeconds: Number,
+      historicTrafficTravelTimeInSeconds: Number,
+      liveTrafficIncidentsTravelTimeInSeconds: Number,
+    },
   },
   {
     timestamps: true,
