@@ -5,7 +5,7 @@ const crypto = require('crypto');
 const AppError = require('../utils/appError'); // Import custom error handling utility
 const Admin = require('../models/adminModel'); // Import the Admin model
 const catchAsync = require('../utils/catchAsync');
-const sendEmail = require('../utils/email');
+const Email = require('../utils/email');
 
 // Function to sign a JSON Web Token (JWT) with user ID
 const signToken = (id) => {
@@ -61,6 +61,7 @@ exports.SignupAdmins = catchAsync(async (req, res, next) => {
     passwordConfirm: req.body.passwordConfirm,
     email: req.body.email,
   });
+  await new Email(newAdmin).sendWelcome();
 
   // Create and send a JWT token and respond with admin data
   createSendToken(newAdmin, 201, req, res);
@@ -186,17 +187,7 @@ exports.forgetPassword = catchAsync(async (req, res, next) => {
   await admin.save({ validateBeforeSave: false });
   console.log(admin.passwordRestExpires);
 
-  await sendEmail({
-    to: admin.email,
-    subject: 'Your password reset code (valid for 10 minutes',
-    message: `
-Hi ${admin.fullName}, \n
-Enter this code to complete the reset. \n
-${randomNum} \n
-Thanks for helping us keep your account secure. \n
-The Trauxit Group \n
-`,
-  });
+  await new Email(admin, randomNum).sendPasswordReset();
 
   res.status(200).json({
     status: 'success',

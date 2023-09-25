@@ -6,7 +6,7 @@ const User = require('../models/userModel'); // Import the User model
 const AppError = require('../utils/appError'); // Import custom error handling utility
 const catchAsync = require('../utils/catchAsync'); // Import utility for catching async errors
 const Booker = require('../models/bookerModel');
-const sendEmail = require('../utils/email');
+const Email = require('../utils/email');
 
 // Function to sign a JSON Web Token (JWT) with user ID
 const signToken = (id) => {
@@ -93,21 +93,14 @@ exports.signupUser = catchAsync(async (req, res, next) => {
         new AppError('You Are subCarrier Must belong to team or company', 400)
       );
     }
-    await sendEmail({
-      to: newUser.email,
-      subject: 'Welcome to Join Us.',
-      message: `
-Hi ${newUser.fullName}, \n
-Great welcome emails don’t stop at clothing or tech brands. Chipotle offers a great lesson many brands in different sectors can learn from. 
-`,
-    });
+
+    await new Email(newUser).sendWelcome();
+
     // Create and send a JWT token and respond with user data
     return createSendToken(newUser, 201, req, res);
   }
-  await sendEmail({
-    to: newUser.email,
-    subject: 'Welcome to Join Us.',
-  });
+  await new Email(newUser).sendWelcome();
+
   createSendToken(newUser, 201, req, res);
 });
 
@@ -262,17 +255,7 @@ exports.forgetPassword = catchAsync(async (req, res, next) => {
   await user.save({ validateBeforeSave: false });
   console.log(user);
 
-  await sendEmail({
-    to: user.email,
-    subject: 'Your password reset code (valid for 10 minutes',
-    message: `
-Hi ${user.name}, \n
-Enter this code to complete the reset. \n
-${randomNum} \n
-Thanks for helping us keep your account secure. \n
-The Trauxit Group\n
-`,
-  });
+  await new Email(user, randomNum).sendPasswordReset();
 
   res.status(200).json({
     status: 'success',

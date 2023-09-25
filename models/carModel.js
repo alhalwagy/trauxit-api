@@ -35,7 +35,7 @@ const carSchema = new mongoose.Schema(
     USDot: {
       type: String,
       required: [true, 'USDot is Required'],
-      unique: true,
+      // unique: true,
     },
     type: {
       type: String,

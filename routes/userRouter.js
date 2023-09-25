@@ -83,9 +83,6 @@ const router = express.Router(); // Create an Express router
  *                         fullName:
  *                           type: string
  *                           description: The full name of the user.
- *                         ID_card_number:
- *                           type: string
- *                           description: The ID card number of the user.
  *                         userName:
  *                           type: string
  *                           description: The username of the user.
@@ -123,7 +120,6 @@ const router = express.Router(); // Create an Express router
  *                   data:
  *                     user:
  *                       fullName: Mahmoud Hok
- *                       ID_card_number: "1234564732s7225"
  *                       userName: hok303
  *                       birthDate: "2001-02-21T22:00:00.000Z"
  *                       address: Gamssa
