@@ -1,6 +1,11 @@
 const express = require('express'); // Import the Express framework
 const authController = require('../controllers/authController'); // Import the authentication controller
 const reviewRouter = require('../routes/reviewRouter');
+const userController = require('../controllers/userController');
+const {
+  signupValidator,
+  loginValidator,
+} = require('../utils/validators/authValidator');
 
 const router = express.Router(); // Create an Express router
 
@@ -210,7 +215,7 @@ router.route('/logout').post(authController.protect, authController.logout);
  *         description: Internal Server Error.
  */
 
-router.route('/getmydata').get(authController.protect, authController.getMe);
+router.route('/getmydata').get(authController.protect, userController.getMe);
 
 /**
  * @swagger
@@ -250,7 +255,7 @@ router.route('/getmydata').get(authController.protect, authController.getMe);
 
 router
   .route('/updatemypassword')
-  .get(authController.protect, authController.updateMyPassword);
+  .get(authController.protect, userController.updateMyPassword);
 
 /**
  * @swagger
@@ -352,6 +357,15 @@ router
 router.post('/forgetpassword', authController.forgetPassword);
 router.post('/verifyresetcode', authController.verifyResetCode);
 router.post('/resetpassword', authController.resetPassword);
+
+router
+  .route('/updatemydata/:id')
+  .patch(
+    authController.protect,
+    userController.uploadUserImage,
+    userController.resizeUserImage,
+    userController.updateMe
+  );
 
 /**
  * @swagger

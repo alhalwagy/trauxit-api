@@ -1,6 +1,5 @@
 const express = require('express');
 const bookerController = require('../controllers/bookerController'); // Import admin controller
-const validatorSignup = require('../utils/validators/signupcompanyValidation');
 
 const router = express.Router();
 

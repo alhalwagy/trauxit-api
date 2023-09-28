@@ -155,6 +155,9 @@ const userSchema = new mongoose.Schema(
         ref: 'User',
       },
     ],
+    image: {
+      type: String,
+    },
   },
   {
     timestamps: true, // Automatically adds createdAt and updatedAt timestamps to the document
@@ -211,13 +214,6 @@ userSchema.methods.correctPassword = async function (
   return await bcrypt.compare(candidatePassword, userPassword);
 };
 
-userSchema.methods.correctPassword = async function (
-  candidatePassword,
-  userPassword
-) {
-  return await bcrypt.compare(candidatePassword, userPassword);
-};
-
 userSchema.methods.checkPasswordChanged = function (JWTTimestamps) {
   if (this.passwordChangedAt) {
     const changedTimestamps = parseInt(
@@ -245,4 +241,3 @@ userSchema.methods.CreatePasswordResetCode = function () {
 const User = mongoose.model('User', userSchema);
 
 module.exports = User; // Export the User model
-

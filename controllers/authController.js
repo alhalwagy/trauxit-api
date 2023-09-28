@@ -51,12 +51,12 @@ exports.signupUser = catchAsync(async (req, res, next) => {
   if (req.body.password != req.body.passwordConfirm) {
     return next(new AppError('Password confirm do not match password.', 400));
   }
+  console.log(req.body);
   // Create a new user based on request data
   const newUser = await User.create({
     role: req.body.role,
     fullName: req.body.fullName,
     userName: req.body.userName,
-    ID_card_number: req.body.ID_card_number,
     password: req.body.password,
     birthDate: req.body.birthDate,
     address: req.body.address,
@@ -170,6 +170,12 @@ exports.protect = catchAsync(async (req, res, next) => {
       )
     );
   }
+  //4)check if user changed password after token issued
+  if (freshUser.checkPasswordChanged(decoded.iat)) {
+    return next(
+      new AppError('User recently changed password. Please log in again.', 401)
+    );
+  }
   // Set the user data in the request object and response locals
   req.user = freshUser;
   res.locals.user = freshUser;
@@ -206,41 +212,6 @@ exports.logout = catchAsync(async (req, res, next) => {
   res.status(200).json({
     status: 'success',
     taken: 'Logout',
-  });
-});
-
-exports.getMe = catchAsync(async (req, res, next) => {
-  const user = await User.findById(req.user.id);
-  user.password = undefined;
-  if (!user) {
-    return next(new AppError('User not found', 404));
-  }
-
-  res.status(200).json({
-    status: 'success',
-    data: {
-      user,
-    },
-  });
-});
-
-exports.updateMyPassword = catchAsync(async (req, res, next) => {
-  const userData = await User.findById(req.user.id);
-  if (!userData) {
-    return next(new AppError('User not found. Please log in again.'));
-  }
-  if (req.body.password != req.body.passwordConfirm) {
-    return next(new AppError('Password confirm do not match password.', 400));
-  }
-
-  if (!userData.correctPassword(req.body.currentPassword, req.user.password)) {
-    return next(new AppError('Your current password is wrong.', 401));
-  }
-
-  userData.password = req.body.password;
-  await userData.save();
-  res.status(200).json({
-    status: 'success',
   });
 });
 
@@ -309,6 +280,7 @@ exports.resetPassword = catchAsync(async (req, res, next) => {
       )
     );
   }
+
   user.password = req.body.password;
   user.passwordConfirm = req.body.passwordConfirm;
   user.passwordRestIsused = undefined;

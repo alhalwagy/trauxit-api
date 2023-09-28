@@ -25,7 +25,6 @@
 
 const mongoose = require('mongoose');
 
-const User = require('./carModel');
 const carSchema = new mongoose.Schema(
   {
     carrierId: {
@@ -33,9 +32,9 @@ const carSchema = new mongoose.Schema(
       ref: 'User',
     },
     USDot: {
-      type: String,
+      type: Number,
       required: [true, 'USDot is Required'],
-      // unique: true,
+      unique: true,
     },
     type: {
       type: String,
@@ -43,6 +42,10 @@ const carSchema = new mongoose.Schema(
     },
     maxWeight: {
       type: Number,
+    },
+    lisence: {
+      type: Number,
+      unique: true,
     },
   },
   {

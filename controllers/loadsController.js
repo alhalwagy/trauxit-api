@@ -5,6 +5,7 @@ const Loads = require('../models/loadsModel'); // Import the Loads model
 const User = require('../models/userModel'); // Import the User model
 const AppError = require('../utils/appError'); // Import an error handling utility
 const catchAsync = require('../utils/catchAsync'); // Import an async error handling utility
+const APIFeatures = require('./../utils/apiFeatures');
 
 // Controller function to create a new load
 exports.createLoad = catchAsync(async (req, res, next) => {
@@ -86,22 +87,27 @@ exports.getLoadsForShipper = catchAsync(async (req, res, next) => {
 // Controller function to get available loads for a carrier
 exports.getLoadsForCarrier = catchAsync(async (req, res, next) => {
   // Find all loads with status 'available' and populate 'idShipper' field with user data
-  const loads = await Loads.find({ status: 'available' }).populate({
-    path: 'idShipper',
-    select: 'fullName userName role address companyName',
-  });
+  const features = new APIFeatures(
+    Loads.find({ status: 'available' }).populate({
+      path: 'idShipper',
+      select: 'fullName userName role address ',
+    }),
+    req.query
+  ).sort();
+
+  const docs = await features.query;
 
   // If no available loads are found, return a 404 error
-  if (loads.length === 0) {
+  if (docs.length === 0) {
     return next(new AppError('There is no loads available.', 404));
   }
 
   // Send a JSON response with the loaded available loads
   res.status(200).json({
     status: 'success',
-    length: loads.length,
+    length: docs.length,
     data: {
-      loads,
+      docs,
     },
   });
 });

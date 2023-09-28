@@ -8,7 +8,6 @@ const catchAsync = require('../utils/catchAsync'); // Import an async error hand
 exports.createCar = catchAsync(async (req, res, nex) => {
   // Set the carrierId in the request body to the authenticated user's ID
   req.body.carrierId = req.user.id;
-
   // Create a new car object based on the request body data
   const newCar = await Car.create(req.body);
 
@@ -17,7 +16,7 @@ exports.createCar = catchAsync(async (req, res, nex) => {
     path: 'carrierId',
     select: 'fullName userName role address companyName',
   });
-
+  await newCar.save();
   // Send a JSON response with a 201 (Created) status code
   res.status(201).json({
     status: 'success',
@@ -104,3 +103,17 @@ exports.getCar = catchAsync(async (req, res, next) => {
   });
 });
 
+exports.getMyCar = catchAsync(async (req, res, next) => {
+  const myCars = await Car.find({ carrierId: req.user.id });
+  if (myCars.length === 0) {
+    // Return an error if the Carriers is not found.
+    return next(new AppError('Not Found This car', 404));
+  }
+  res.status(200).json({
+    status: 'success',
+    result: myCars.length,
+    data: {
+      myCars,
+    },
+  });
+});

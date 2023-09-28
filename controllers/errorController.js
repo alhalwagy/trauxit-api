@@ -14,7 +14,7 @@ const handleJsonWebTokenError = () =>
 const handleDuplicateFieldsDB = (err) => {
   // Extract the duplicate value from the error message
   const value = err.errmsg.match(/([^{}]+)(?=\s*}$)/)[0].split(':')[1];
-  const message = `Duplicate field value: ${value}. Please use another value!`;
+  const message = `Duplicate ${value}.`;
   return new AppError(message, 400); // Return an AppError with a 400 status code
 };
 

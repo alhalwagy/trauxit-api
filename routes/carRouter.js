@@ -11,6 +11,14 @@ const adminController = require('../controllers/adminController');
 
 const router = express.Router();
 
+router
+  .route('/mycars')
+  .get(
+    authController.protect,
+    authController.restrictTo('carrier'),
+    carController.getMyCar
+  );
+
 /**
  * @swagger
  * /cars:
@@ -120,7 +128,7 @@ router
   );
 /**
  * @swagger
- * /cars/{id}:
+ * /cars/:
  *   get:
  *     summary: Get a car by ID (for admins)
  *     tags:
