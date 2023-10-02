@@ -1,3 +1,4 @@
+
 doctype html
 html
   head
@@ -5,12 +6,8 @@ html
     meta(http-equiv="Content-Type", content="text/html; charset=UTF-8")
     title Simple Transactional Email
     style.
-      /* -------------------------------------
-      GLOBAL RESETS
-      ------------------------------------- */
-      
-      /*All the styling goes here*/
-      
+      /* Global CSS styles go here */
+   
       img {
       border: none;
       -ms-interpolation-mode: bicubic;
@@ -131,7 +128,7 @@ html
       font-size: 14px;
       font-weight: normal;
       margin: 0;
-      margin-bottom: 15px; 
+      margin-bottom: 10px; 
       }
       p li,
       ul li,
@@ -157,16 +154,16 @@ html
       width: auto; 
       }
       .btn table td {
-      background-color: #ffffff;
+      background-color: #ff8201;
       border-radius: 5px;
       text-align: center; 
       }
       .btn a {
-      background-color: #ffffff;
+      background-color: #ff8201;
       border: solid 1px #110F0F;
       border-radius: 5px;
       box-sizing: border-box;
-      color: #3498db;
+      color: #ff8201;
       cursor: pointer;
       display: inline-block;
       font-size: 14px;
@@ -178,13 +175,13 @@ html
       }
       
       .btn-primary table td {
-      background-color: #3498db; 
+      background-color: #ff8201; 
       }
       
       .btn-primary a {
       background-color: #ff8201;
       border-color: #110F0F;
-      color: #ffffff; 
+      color: #ff8201; 
       }
       
       /* -------------------------------------
@@ -329,11 +326,13 @@ html
       border-color: #34495e !important; 
       } 
       }
+
+      /* Your CSS styles for the email */
+
   body
     span.preheader This is preheader text. Some clients will show this text as a preview.
     table.body(role="presentation", border="0", cellpadding="0", cellspacing="0")
       tr
-      
         td.container
           .content
             // START CENTERED WHITE CONTAINER
@@ -346,16 +345,10 @@ html
                       td
                         p Hi #{firstName},
                         p Enter this code to complete the reset.
-                        table.btn.btn-primary(role="presentation", border="0", cellpadding="0", cellspacing="0")
-                          tbody
-                            tr
-                              td(align="left")
-                                table(role="presentation", border="0", cellpadding="0", cellspacing="0")
-                                  tbody
-                                    tr
-                                      td
-                                        a(href="https://trauxit.app/", target="_blank") #{randomNum}
-                        p If you didn't request this pin, we recommend you change your LinkedIn password.
+                        // Replace the button area with the random number and apply the style
+                        p(style="background-color: #ff8201; border: solid 1px #ff8201; border-radius: 5px; box-sizing: border-box; color: #ffffff; cursor: pointer; display: inline-block; font-size: 16px; font-weight: bold; margin: 0; padding: 12px 25px; text-decoration: none; text-transform: capitalize;") #{randomNum}
+                        // End of random number
+                        p If you didn't request this pin, we recommend you change your password.
                         p Good luck! TRAUXIT GROUP, INC T.
               // END MAIN CONTENT AREA
             // END CENTERED WHITE CONTAINER
@@ -364,14 +357,9 @@ html
               table(role="presentation", border="0", cellpadding="0", cellspacing="0")
                 tr
                   td.content-block
-                    span.apple-link Trauxit Inc, Egypt, Mansoura Dakahlia , Qanat Suez ST .                    
+                    span.apple-link Trauxit Inc.
                     | Don't like these emails?
-                    a(href="http://i.imgur.com/CScmqnj.gif") Unsubscribe
-                    | .
-                tr
-                  td.content-block.powered-by
-                    | Powered by
-                    a(href="https://trauxit.app/") HTMLemail
+                    a(href="#") Unsubscribe
                     | .
             // END FOOTER
         td &amp;

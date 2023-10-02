@@ -63,6 +63,7 @@ exports.signupUser = catchAsync(async (req, res, next) => {
     email: req.body.email,
   });
 
+  newUser.image = '';
   if (req.body.role === 'subcarrier') {
     if (req.body.company_id) {
       const company = await Booker.findOneAndUpdate(
@@ -123,7 +124,9 @@ exports.login = catchAsync(async (req, res, next) => {
   ) {
     return next(new AppError('Incorrect email or password', 401));
   }
-
+  if (!user.image) {
+    user.image = 'image';
+  }
   // Create and send a JWT token and respond with user data
   createSendToken(user, 200, req, res);
 });
@@ -171,11 +174,13 @@ exports.protect = catchAsync(async (req, res, next) => {
     );
   }
   //4)check if user changed password after token issued
-  if (freshUser.checkPasswordChanged(decoded.iat)) {
-    return next(
-      new AppError('User recently changed password. Please log in again.', 401)
-    );
-  }
+  // if (freshUser.checkPasswordChanged(decoded.iat)) {
+  //   return next(
+  //     new AppError('User recently changed password. Please log in again.', 401)
+  //   );
+  // }
+
+  console.log(req.user);
   // Set the user data in the request object and response locals
   req.user = freshUser;
   res.locals.user = freshUser;
@@ -235,6 +240,7 @@ exports.forgetPassword = catchAsync(async (req, res, next) => {
 });
 
 exports.verifyResetCode = catchAsync(async (req, res, next) => {
+  console.log(req.body);
   hashedResetCode = crypto
     .createHash('sha256')
     .update(req.body.passwordRestCode)

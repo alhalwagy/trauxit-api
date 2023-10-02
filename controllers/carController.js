@@ -104,6 +104,8 @@ exports.getCar = catchAsync(async (req, res, next) => {
 });
 
 exports.getMyCar = catchAsync(async (req, res, next) => {
+  console.log(req.user.userName);
+  console.log(req.body);
   const myCars = await Car.find({ carrierId: req.user.id });
   if (myCars.length === 0) {
     // Return an error if the Carriers is not found.

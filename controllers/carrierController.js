@@ -8,6 +8,7 @@ const User = require('../models/userModel'); // Import the User model
 const catchAsync = require('../utils/catchAsync');
 const Loads = require('../models/loadsModel');
 const Booker = require('../models/bookerModel');
+const APIFeatures = require('../utils/apiFeatures');
 
 //get location for carriers
 exports.locationdectecd = catchAsync(async (req, res, next) => {
@@ -316,17 +317,22 @@ exports.updateCarrierToSubcarrier = catchAsync(async (req, res, next) => {
 });
 
 exports.getBookedLoadsForCarrier = catchAsync(async (req, res, next) => {
-  const loads = await Loads.find({
-    status: 'Booked',
-    idCarrier: req.user.id.toString(),
-  });
+  const features = new APIFeatures(
+    Loads.find({
+      status: { $in: ['Booked', 'inroads', 'inchecksp', 'paymented'] },
+      idCarrier: req.user.id.toString(),
+    }),
+    req.query
+  ).sort();
+
+  const loads = await features.query;
 
   if (loads.length === 0) {
     return next(new AppError('There is no loads Booked for you', 404));
   }
   res.status(200).json({
     status: 'success',
-    result: loads.length,
+    length: loads.length,
     data: {
       loads,
     },
@@ -334,16 +340,23 @@ exports.getBookedLoadsForCarrier = catchAsync(async (req, res, next) => {
 });
 
 exports.getdroupedoutLoadsForCarrier = catchAsync(async (req, res, next) => {
-  const loads = await Loads.find({
-    status: 'Completed',
-    idCarrier: req.user.id.toString(),
-  });
+  const features = new APIFeatures(
+    Loads.find({
+      status: 'completed',
+      idCarrier: req.user.id.toString(),
+    }),
+    req.query
+  ).sort();
+
+  const loads = await features.query;
+
   if (loads.length === 0) {
     return next(new AppError('There is no loads Carried for you', 404));
   }
+
   res.status(200).json({
     status: 'success',
-    result: loads.length,
+    length: loads.length,
     data: {
       loads,
     },

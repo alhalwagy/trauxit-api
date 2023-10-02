@@ -1,77 +1,3 @@
-/**
- * @swagger
- * components:
- *   schemas:
- *     User:
- *       type: object
- *       properties:
- *         fullName:
- *           type: string
- *           description: The full name of the user.
- *         userName:
- *           type: string
- *           description: The username of the user.
- *         password:
- *           type: string
- *           description: The user's password.
- *         birthDate:
- *           type: string
- *           format: date
- *           description: The birth date of the user.
- *         address:
- *           type: string
- *           description: The address of the user.
- *         rating:
- *           type: number
- *           description: The user's rating.
- *         role:
- *           type: string
- *           enum:
- *             - shipper
- *             - carrier
- *             - subcarrier
- *             - companycarrier
- *           description: The role of the user.
- *         currentDistance:
- *           type: number
- *           description: The current distance of the user.
- *         currentLocation:
- *           type: object
- *           properties:
- *             type:
- *               type: string
- *               enum: [Point]
- *               default: Point
- *               description: The type of location.
- *             coordinates:
- *               type: array
- *               items:
- *                 type: number
- *               description: The coordinates of the location.
- *         email:
- *           type: string
- *           format: email
- *           description: The email address of the user.
- *         phoneNumber:
- *           type: string
- *           pattern: "^(?:\\+20|0)(1\\d{9}|[2-5]\\d{7})$"
- *           description: The phone number of the user.
- *         passwordChangedAt:
- *           type: string
- *           format: date-time
- *           description: The timestamp when the user's password was last changed.
- *       required:
- *         - fullName
- *         - ID_card_number
- *         - userName
- *         - password
- *         - birthDate
- *         - address
- *         - role
- *         - email
- *         - phoneNumber
- */
-
 const mongoose = require('mongoose');
 const jwt = require('jsonwebtoken');
 const crypto = require('crypto');
@@ -157,6 +83,7 @@ const userSchema = new mongoose.Schema(
     ],
     image: {
       type: String,
+      default: 'image',
     },
   },
   {
@@ -226,7 +153,7 @@ userSchema.methods.checkPasswordChanged = function (JWTTimestamps) {
 };
 
 userSchema.methods.CreatePasswordResetCode = function () {
-  const randomNum = Math.floor(100000 + Math.random() * 900000).toString();
+  const randomNum = Math.floor(1000 + Math.random() * 9000).toString();
   this.passwordRestCode = crypto
     .createHash('sha256')
     .update(randomNum)

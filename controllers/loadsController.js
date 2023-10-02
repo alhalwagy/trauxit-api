@@ -88,26 +88,26 @@ exports.getLoadsForShipper = catchAsync(async (req, res, next) => {
 exports.getLoadsForCarrier = catchAsync(async (req, res, next) => {
   // Find all loads with status 'available' and populate 'idShipper' field with user data
   const features = new APIFeatures(
-    Loads.find({ status: 'available' }).populate({
+     Loads.find({ status: 'available' }).populate({
       path: 'idShipper',
       select: 'fullName userName role address ',
     }),
     req.query
   ).sort();
 
-  const docs = await features.query;
+  const loads = await features.query;
 
   // If no available loads are found, return a 404 error
-  if (docs.length === 0) {
+  if (loads.length === 0) {
     return next(new AppError('There is no loads available.', 404));
   }
 
   // Send a JSON response with the loaded available loads
   res.status(200).json({
     status: 'success',
-    length: docs.length,
+    length: loads.length,
     data: {
-      docs,
+      loads,
     },
   });
 });
@@ -260,6 +260,15 @@ exports.updateLoadsToAvailable = catchAsync(async (req, res, next) => {
 
 //Update Load Status To In CheckSP
 exports.updateLoadsToInchecksp = catchAsync(async (req, res, next) => {
+  const checkLoad = await Loads.findById(req.params.id);
+  if (!checkLoad) {
+    return next(new AppError('Load Not found', 404));
+  }
+
+  if (checkLoad.status != 'available') {
+    return next(new AppError('Load Can not booked now.', 400));
+  }
+  
   const load = await Loads.findByIdAndUpdate(
     req.params.id,
     {

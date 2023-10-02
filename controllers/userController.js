@@ -104,8 +104,11 @@ exports.updateMe = catchAsync(async (req, res, next) => {
 
   // Check if an old image exists
   if (req.files.image) {
+    const imageUrl = req.user.image;
+    const parts = imageUrl.split('User');
     // Get the path to the old image
-    const oldImagePath = `public/img/${req.user.image}`;
+    const oldImagePath = `public/img/User${parts[1]}`;
+    console.log(oldImagePath);
 
     // Check if the old image file exists
     if (fs.existsSync(oldImagePath)) {
@@ -114,7 +117,7 @@ exports.updateMe = catchAsync(async (req, res, next) => {
     }
   }
 
-  //2)Filtered out unwanted fields that are not allowed to be updated
+  //2) Filtered out unwanted fields that are not allowed to be updated
   const filteredBody = filterObj(
     req.body,
     'fullName',
@@ -125,15 +128,20 @@ exports.updateMe = catchAsync(async (req, res, next) => {
     'address'
   );
 
+  let imageUrl;
   if (req.files.image) {
-    filteredBody.image = req.body.image;
+    imageUrl = `http://localhost:3000/public/img/${req.body.image}`;
+
+    filteredBody.image = imageUrl;
   }
   console.log(filteredBody);
-  //3)Update the user document
+
+  //3) Update the user document
   const updatedUser = await User.findByIdAndUpdate(req.user.id, filteredBody, {
     new: true,
     runValidators: true,
   });
+
   res.status(200).json({
     status: 'success',
     data: {

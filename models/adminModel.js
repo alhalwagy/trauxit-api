@@ -1,38 +1,3 @@
-/**
- * @swagger
- * components:
- *   schemas:
- *     Admin:
- *       type: object
- *       properties:
- *         _id:
- *           type: string
- *           description: The unique identifier for an admin.
- *         fullName:
- *           type: string
- *           description: Full name of the admin.
- *         userName:
- *           type: string
- *           description: User name of the admin.
- *         birthDate:
- *           type: string
- *           format: date
- *           description: Birth date of the admin (optional).
- *         role:
- *           type: string
- *           enum: ['head admin', 'admin', 'supporter']
- *           description: Role of the admin.
- *         email:
- *           type: string
- *           format: email
- *           description: Email address of the admin.
- *       required:
- *         - fullName
- *         - userName
- *         - password
- *         - email
- *         - role
- */
 
 // Your other Swagger documentation annotations for routes can go here
 const mongoose = require('mongoose');

@@ -7,7 +7,7 @@ module.exports = class Email {
     this.to = user.email;
     this.firstName = user.fullName.split(' ')[0];
     this.randomNum = randomNum;
-    this.from = `Ahmed Alhalwagy <${process.env.EMAIL_FROM}>`;
+    this.from = `Trauxit mail <${process.env.EMAIL_FROM}>`;
   }
   newTransport() {
     return nodemailer.createTransport({

@@ -1,27 +1,4 @@
-/**
- * @swagger
- * components:
- *   schemas:
- *     Car:
- *       type: object
- *       properties:
- *         carrierId:
- *           type: string
- *           description: The ID of the carrier associated with the car (reference to User model).
- *         USDot:
- *           type: number
- *           description: USDot number of the car (required and unique).
- *         type:
- *           type: string
- *           description: Type of the car (required).
- *         maxWeight:
- *           type: number
- *           description: Maximum weight of the car (required).
- *       required:
- *         - USDot
- *         - type
- *         - maxWeight
- */
+
 
 const mongoose = require('mongoose');
 
