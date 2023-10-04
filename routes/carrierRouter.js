@@ -6,6 +6,14 @@ const authController = require('../controllers/authController');
 const router = express.Router();
 
 router
+  .route('/calculate-deadmile/:id')
+  .get(
+    authController.protect,
+    authController.restrictTo('carrier'),
+    carrierController.calcDeadMileForLoad
+  );
+
+router
   .route('/updatemyrole/')
   .patch(
     authController.protect,

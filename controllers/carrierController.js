@@ -196,6 +196,12 @@ exports.calcDistFromCarrierToShopping = catchAsync(async (req, res, next) => {
           StatusNow,
         },
       });
+    })
+    .catch((error) => {
+      console.error('Axios request error:', error);
+      next(
+        new AppError('Invalid Coordinates Make Sure With You Two Points', 400)
+      );
     });
 });
 
@@ -461,4 +467,72 @@ exports.rejectFriendReq = catchAsync(async (req, res, next) => {
     status: 'success',
     message: 'Friend Request Rejected.',
   });
+});
+
+exports.calcDeadMileForLoad = catchAsync(async (req, res, next) => {
+  const unit = 'mi';
+  const multiplier = unit === 'mi' ? 0.000621371192 : 0.001;
+
+  let userCoordinates;
+  const load = await Loads.findById(req.params.id);
+
+  if (!load) {
+    return next(new AppError('Load Not Found', 404));
+  }
+
+  const apiKey = process.env.API_KEY_TOMTOM;
+  userCoordinates = load.DropoutLocation.coordinates;
+  // Coordinates of the two points
+  const point1 = {
+    lat: userCoordinates[1],
+    lon: userCoordinates[0],
+  };
+
+  const point2 = {
+    lat: req.user.mygrage.coordinates[1] * 1,
+    lon: req.user.mygrage.coordinates[0] * 1,
+  };
+  console.log(point1);
+  console.log(point2);
+
+  const travelMode = 'truck';
+  // TomTom API endpoint for calculating distance
+  const apiUrl = `https://api.tomtom.com/routing/1/calculateRoute/${point1.lat},${point1.lon}:${point2.lat},${point2.lon}/json?travelMode=${travelMode}`;
+
+  // Make the API request
+  axios
+    .get(apiUrl, {
+      params: {
+        key: apiKey,
+      },
+    })
+    .then(async (response) => {
+      if (response.status > 200) {
+        return next(
+          new AppError(
+            'Failed to retrieve distance. Check your coordinates.',
+            404
+          )
+        );
+      }
+      const data = response.data;
+      // Extract the distance in meters from the response
+      const distanceInMeters = data.routes[0].summary.lengthInMeters;
+      // Convert the distance to kilometers
+      const distanceInKilometers = distanceInMeters * multiplier;
+      const distance = distanceInKilometers.toFixed(2);
+
+      res.status(200).json({
+        status: 'success',
+        data: {
+          distance,
+        },
+      });
+    })
+    .catch((error) => {
+      console.error('Axios request error:', error);
+      next(
+        new AppError('Invalid Coordinates Make Sure With You Two Points', 400)
+      );
+    });
 });

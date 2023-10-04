@@ -86,20 +86,24 @@ exports.getLoadsForShipper = catchAsync(async (req, res, next) => {
 
 // Controller function to get available loads for a carrier
 exports.getLoadsForCarrier = catchAsync(async (req, res, next) => {
-  // Find all loads with status 'available' and populate 'idShipper' field with user data
+  const countDocs = await Loads.countDocuments({ status: 'available' });
   const features = new APIFeatures(
-     Loads.find({ status: 'available' }).populate({
+    Loads.find({ status: 'available' }).populate({
       path: 'idShipper',
       select: 'fullName userName role address ',
     }),
     req.query
-  ).sort();
+  )
+    .sort()
+    .paginate(countDocs);
+  console.log(features);
 
+  console.log(countDocs);
   const loads = await features.query;
 
   // If no available loads are found, return a 404 error
   if (loads.length === 0) {
-    return next(new AppError('There is no loads available.', 404));
+    return next(new AppError('There is no more loads available.', 404));
   }
 
   // Send a JSON response with the loaded available loads
@@ -208,7 +212,12 @@ exports.getDistances = catchAsync(async (req, res, next) => {
     axiosPromises.push(axiosPromise);
   }
 
-  const axiosResponses = await Promise.all(axiosPromises);
+  const axiosResponses = await Promise.all(axiosPromises).catch((error) => {
+    console.error('Axios request error:', error);
+    return next(
+      new AppError('Invalid Coordinates Make Sure With You Two Points', 400)
+    );
+  });
 
   const distances = [];
 
@@ -268,7 +277,7 @@ exports.updateLoadsToInchecksp = catchAsync(async (req, res, next) => {
   if (checkLoad.status != 'available') {
     return next(new AppError('Load Can not booked now.', 400));
   }
-  
+
   const load = await Loads.findByIdAndUpdate(
     req.params.id,
     {
@@ -457,4 +466,3 @@ exports.deleteLoad = catchAsync(async (req, res, next) => {
     status: 'success',
   });
 });
-

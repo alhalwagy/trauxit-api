@@ -296,7 +296,7 @@ exports.verifyResetCode = catchAsync(async (req, res, next) => {
     booker.passwordRestExpires = undefined;
     booker.save({ validateBeforeSave: false });
 
-   return res.status(200).json({
+    return res.status(200).json({
       status: 'success',
     });
   }
