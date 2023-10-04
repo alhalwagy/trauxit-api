@@ -457,3 +457,4 @@ exports.deleteLoad = catchAsync(async (req, res, next) => {
     status: 'success',
   });
 });
+

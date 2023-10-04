@@ -83,7 +83,15 @@ const userSchema = new mongoose.Schema(
     ],
     image: {
       type: String,
-      default: 'image',
+      default: 'User',
+    },
+    mygrage: {
+      type: {
+        type: String,
+        enum: ['Point'],
+        default: 'Point',
+      },
+      coordinates: [Number],
     },
   },
   {

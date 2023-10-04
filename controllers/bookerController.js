@@ -1,13 +1,111 @@
 const { promisify } = require('util');
 const jwt = require('jsonwebtoken'); // Import JWT for token handling
-
-const User = require('../models/userModel'); // Import the User model
-const AppError = require('../utils/appError'); // Import custom error handling utility
-const catchAsync = require('../utils/catchAsync'); // Import utility for catching async errors
-const Booker = require('../models/bookerModel');
+const fs = require('fs');
+const multer = require('multer');
+const sharp = require('sharp');
 const validator = require('express-validator');
 const crypto = require('crypto');
+
+const AppError = require('../utils/appError'); // Import custom error handling utility
+const catchAsync = require('../utils/catchAsync'); // Import utility for catching async errors
+
+const User = require('../models/userModel'); // Import the User model
+const Booker = require('../models/bookerModel');
+
 const Email = require('../utils/email');
+
+const multerStorage = multer.memoryStorage();
+
+const multerFilter = (req, file, cb) => {
+  console.log(file);
+  if (file.mimetype.startsWith('image')) {
+    cb(null, true);
+  } else {
+    cb(new AppError('Not an image! Please upload only images.', 400));
+  }
+};
+
+const upload = multer({ storage: multerStorage, fileFilter: multerFilter });
+
+exports.uploadUserImage = upload.fields([
+  {
+    name: 'image',
+    maxCount: 1,
+  },
+]);
+
+exports.resizeUserImage = catchAsync(async (req, res, next) => {
+  if (!req.files) {
+    return next();
+  }
+  // console.log(req.files);
+  req.body.image = `User-${req.booker.id}-${Date.now()}.jpeg`;
+  // console.log(req.files.image);
+  await sharp(req.files.image[0].buffer)
+    .resize(700, 700)
+    .toFormat('jpeg')
+    .jpeg({ quality: 90 })
+    .toFile(`public/img/${req.body.image}`);
+  next();
+});
+
+const filterObj = (obj, ...allowedFields) => {
+  const newObj = {};
+  Object.keys(obj).forEach((el) => {
+    if (allowedFields.includes(el)) {
+      newObj[el] = obj[el];
+    }
+  });
+  return newObj;
+};
+
+exports.updateBookerData = catchAsync(async (req, res, next) => {
+  if (req.body.password || req.body.passwordConfirm) {
+    return next(new AppError('This route not for update Password', 400));
+  }
+  //2) Filtered out unwanted fields that are not allowed to be updated
+  const filteredBody = filterObj(
+    req.body,
+    'fullName',
+    'email',
+    'phoneNumber',
+    'userName',
+    'birthDate',
+    'address'
+  );
+
+  if (req.files) {
+    if (req.booker.image) {
+      const imageUrl = req.booker.image;
+      const part = imageUrl.split('User');
+      const oldImagePath = `public/img/User${part[1]}`;
+      console.log(oldImagePath);
+      if (fs.existsSync(oldImagePath)) {
+        fs.unlinkSync(oldImagePath);
+      }
+    }
+
+    imageUrl = `http://192.168.1.16:3000/public/img/${req.body.image}`;
+
+    filteredBody.image = imageUrl;
+  }
+
+  const updatedBooker = await Booker.findByIdAndUpdate(
+    req.booker.id,
+    filteredBody,
+    {
+      new: true,
+      runValidators: true,
+    }
+  );
+  updatedBooker.password = undefined;
+  res.status(200).json({
+    status: 'success',
+    data: {
+      user: updatedBooker,
+    },
+  });
+});
 
 // Function to sign a JSON Web Token (JWT) with user ID
 const signToken = (id) => {

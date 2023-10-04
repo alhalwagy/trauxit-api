@@ -68,6 +68,7 @@ const bookerSchema = new mongoose.Schema(
     },
     fullName: String,
     image: String,
+    
 
     passwordChangedAt: Date,
     passwordRestCode: String,

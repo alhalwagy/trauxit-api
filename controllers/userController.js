@@ -127,7 +127,8 @@ exports.updateMe = catchAsync(async (req, res, next) => {
     'phoneNumber',
     'userName',
     'birthDate',
-    'address'
+    'address',
+    'mygrage'
   );
 
   let imageUrl;
