@@ -1,10 +1,9 @@
-
-
 const mongoose = require('mongoose');
 const validator = require('validator');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
 const slugify = require('slugify');
+const crypto = require('crypto');
 
 const signToken = (id) => {
   return jwt.sign({ id }, process.env.JWT_SECRET, {
@@ -67,6 +66,13 @@ const bookerSchema = new mongoose.Schema(
       type: String,
       unique: true,
     },
+    fullName: String,
+    image: String,
+
+    passwordChangedAt: Date,
+    passwordRestCode: String,
+    passwordRestExpires: Date,
+    passwordRestIsused: Boolean,
   },
   {
     timestamps: true,
@@ -110,6 +116,29 @@ bookerSchema.methods.correctPassword = async function (
   userPassword
 ) {
   return await bcrypt.compare(candidatePassword, userPassword);
+};
+
+bookerSchema.methods.checkPasswordChanged = function (JWTTimestamps) {
+  if (this.passwordChangedAt) {
+    const changedTimestamps = parseInt(
+      this.passwordChangedAt.getTime() / 1000,
+      10
+    );
+    return JWTTimestamps < changedTimestamps;
+  }
+  return false;
+};
+
+bookerSchema.methods.CreatePasswordResetCode = function () {
+  const randomNum = Math.floor(1000 + Math.random() * 9000).toString();
+  this.passwordRestCode = crypto
+    .createHash('sha256')
+    .update(randomNum)
+    .digest('hex');
+  console.log(new Date(Date.now()));
+  this.passwordRestExpires = Date.now() + 10 * 60 * 1000;
+  this.passwordRestIsused = false;
+  return randomNum;
 };
 
 const Booker = mongoose.model('Booker', bookerSchema);

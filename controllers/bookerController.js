@@ -7,6 +7,7 @@ const catchAsync = require('../utils/catchAsync'); // Import utility for catchin
 const Booker = require('../models/bookerModel');
 const validator = require('express-validator');
 const crypto = require('crypto');
+const Email = require('../utils/email');
 
 // Function to sign a JSON Web Token (JWT) with user ID
 const signToken = (id) => {
@@ -16,11 +17,11 @@ const signToken = (id) => {
 };
 
 // Function to create and send a JWT token in a cookie and respond with user data
-const createSendToken = async (booker, statusCode, req, res) => {
-  const token = signToken(booker._id);
-  booker.hashToken = token;
+const createSendToken = async (user, statusCode, req, res) => {
+  const token = signToken(user._id);
+  user.hashToken = token;
 
-  await booker.save({ validateBeforeSave: false });
+  await user.save({ validateBeforeSave: false });
 
   // Define cookie options
   const cookieOptions = {
@@ -35,14 +36,14 @@ const createSendToken = async (booker, statusCode, req, res) => {
   res.cookie('jwt', token, cookieOptions);
 
   // Remove the password from the company object before sending it to the client
-  booker.password = undefined;
+  user.password = undefined;
 
   // Respond with the JWT token and company data
   res.status(statusCode).json({
     status: 'success',
     token,
     data: {
-      booker,
+      user,
     },
   });
 };
@@ -71,12 +72,12 @@ exports.signup = catchAsync(async (req, res, next) => {
     }
     const encryptedCompany_id = crypto
       .createHash('sha256')
-      .update(req.body.company_id)
+      .update(req.body.group_id)
       .digest('hex');
     // Create a new Company based on request data
     const newBooker = await Booker.create({
       companyName: req.body.companyName,
-      company_id: encryptedCompany_id,
+      group_id: encryptedCompany_id,
       password: req.body.password,
       address: req.body.address,
       email: req.body.email,
@@ -89,8 +90,8 @@ exports.signup = catchAsync(async (req, res, next) => {
     // Create and send a JWT token and respond with Company data
     createSendToken(newBooker, 201, req, res);
   } else if (req.body.role === 'teamleader') {
+    console.log(req.body);
     if (
-      !req.body.team_id ||
       !req.body.teamName ||
       !req.body.password ||
       !req.body.address ||
@@ -102,14 +103,16 @@ exports.signup = catchAsync(async (req, res, next) => {
     ) {
       return next(new AppError('The body of request not completed.'), 400);
     }
+    const team_id = Math.floor(10000000 + Math.random() * 90000000).toString();
+
     // Create a new Company based on request data
     const encryptedTeam_id = crypto
       .createHash('sha256')
-      .update(req.body.team_id)
+      .update(team_id)
       .digest('hex');
     const newBooker = await Booker.create({
       teamName: req.body.teamName,
-      team_id: encryptedTeam_id,
+      group_id: encryptedTeam_id,
       password: req.body.password,
       address: req.body.address,
       email: req.body.email,
@@ -118,39 +121,17 @@ exports.signup = catchAsync(async (req, res, next) => {
       userName: req.body.userName,
       role: req.body.role,
     });
+    await new Email(newBooker, team_id).sendTeamId();
 
     createSendToken(newBooker, 201, req, res);
   }
-});
-
-exports.login = catchAsync(async (req, res, next) => {
-  // Check if email and password are provided in the request body
-  if (!req.body.password || !req.body.email) {
-    return next(new AppError('Please provide us by email and password', 400));
-  }
-
-  // Find a user by their username, including the password
-  const booker = await Booker.findOne({ email: req.body.email }).select(
-    '+password'
-  );
-
-  // Check if the user exists and the provided password is correct
-  if (
-    !booker ||
-    !(await booker.correctPassword(req.body.password, booker.password))
-  ) {
-    return next(new AppError('Incorrect email or password', 401));
-  }
-
-  // Create and send a JWT token and respond with company data
-  createSendToken(booker, 200, req, res);
 });
 
 exports.logout = catchAsync(async (req, res, next) => {
   const booker = await Booker.findById(req.booker.id);
 
   if (!booker) {
-    return next(new AppError('There is no Company with this id.', 404));
+    return next(new AppError('There is no Booker with this id.', 404));
   }
 
   booker.hashToken = undefined;
@@ -210,4 +191,44 @@ exports.protect = catchAsync(async (req, res, next) => {
 
   // Move to the next middleware
   next();
+});
+
+exports.getMe = catchAsync(async (req, res, next) => {
+  const booker = await Booker.findById(req.booker.id);
+  booker.password = undefined;
+  if (!booker) {
+    return next(AppError('Booker not found', 404));
+  }
+
+  res.status(200).json({
+    status: 'success',
+    data: {
+      booker,
+    },
+  });
+});
+
+exports.updateMyPassword = catchAsync(async (req, res, next) => {
+  const bookerData = await Booker.findById(req.booker.id);
+  if (!bookerData) {
+    return next(new AppError('Booker not found. Please log in again.'));
+  }
+  if (req.body.password != req.body.passwordConfirm) {
+    return next(new AppError('Password confirm do not match password.', 400));
+  }
+
+  if (
+    !(await bookerData.correctPassword(
+      req.body.currentPassword,
+      bookerData.password
+    ))
+  ) {
+    return next(new AppError('Your current password is wrong.', 401));
+  }
+
+  bookerData.password = req.body.password;
+  await bookerData.save();
+  res.status(200).json({
+    status: 'success',
+  });
 });

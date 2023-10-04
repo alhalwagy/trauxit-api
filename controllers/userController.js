@@ -14,7 +14,7 @@ exports.getMe = catchAsync(async (req, res, next) => {
   const user = await User.findById(req.user.id);
   user.password = undefined;
   if (!user) {
-    return next(new AppError('User not found', 404));
+    return next(AppError('User not found', 404));
   }
 
   res.status(200).json({
@@ -49,6 +49,7 @@ const multerStorage = multer.memoryStorage();
 
 // Check if user upload only images or not
 const multerFilter = (req, file, cb) => {
+  console.log(file);
   if (file.mimetype.startsWith('image')) {
     cb(null, true);
   } else {
@@ -67,7 +68,7 @@ exports.uploadUserImage = upload.fields([
 
 //use sharp package to image preprocessing
 exports.resizeUserImage = catchAsync(async (req, res, next) => {
-  if (!req.files.image) {
+  if (!req.files) {
     return next();
   }
   // console.log(req.files);
@@ -93,6 +94,7 @@ const filterObj = (obj, ...allowedFields) => {
 };
 
 exports.updateMe = catchAsync(async (req, res, next) => {
+  console.log(req.files);
   if (req.body.password || req.body.passwordConfirm) {
     return next(
       new AppError(
@@ -103,7 +105,7 @@ exports.updateMe = catchAsync(async (req, res, next) => {
   }
 
   // Check if an old image exists
-  if (req.files.image) {
+  if (req.files) {
     const imageUrl = req.user.image;
     const parts = imageUrl.split('User');
     // Get the path to the old image
@@ -129,8 +131,8 @@ exports.updateMe = catchAsync(async (req, res, next) => {
   );
 
   let imageUrl;
-  if (req.files.image) {
-    imageUrl = `http://localhost:3000/public/img/${req.body.image}`;
+  if (req.files) {
+    imageUrl = `http://192.168.1.16:3000/public/img/${req.body.image}`;
 
     filteredBody.image = imageUrl;
   }
@@ -141,7 +143,7 @@ exports.updateMe = catchAsync(async (req, res, next) => {
     new: true,
     runValidators: true,
   });
-
+  updatedUser.password = undefined;
   res.status(200).json({
     status: 'success',
     data: {

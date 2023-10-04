@@ -29,7 +29,7 @@ app.use(cors());
 // app.options("*", cors());
 
 //serving static file
-app.use('/public', express.static(path.join(__dirname, 'public')));
+app.use('/public/img/', express.static(path.join(__dirname, 'public/img/')));
 
 //development logging
 if (process.env.NODE_ENV === 'development') {

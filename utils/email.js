@@ -5,9 +5,10 @@ const htmlToText = require('html-to-text');
 module.exports = class Email {
   constructor(user, randomNum) {
     this.to = user.email;
-    this.firstName = user.fullName.split(' ')[0];
+    if (user.fullName) this.firstName = user.fullName.split(' ')[0];
     this.randomNum = randomNum;
     this.from = `Trauxit mail <${process.env.EMAIL_FROM}>`;
+    if (user.teamName) this.teamName = user.teamName;
   }
   newTransport() {
     return nodemailer.createTransport({
@@ -24,6 +25,7 @@ module.exports = class Email {
     //1) Render HTML based on pug template
     const html = pug.renderFile(`${__dirname}/../views/${template}.pug`, {
       firstName: this.firstName,
+      teamName: this.teamName,
       randomNum: this.randomNum,
       subject,
     });
@@ -46,6 +48,12 @@ module.exports = class Email {
     await this.send(
       'resetPassMail',
       'Your password reset token (valid for only 10 minutes)'
+    );
+  }
+  async sendTeamId() {
+    await this.send(
+      'teamIdMail',
+      'Your Secure Team ID Do Not Share it.Make Your Team Secure.'
     );
   }
 };

@@ -117,15 +117,25 @@ exports.login = catchAsync(async (req, res, next) => {
     '+password'
   );
 
-  // Check if the user exists and the provided password is correct
-  if (
-    !user ||
-    !(await user.correctPassword(req.body.password, user.password))
-  ) {
-    return next(new AppError('Incorrect email or password', 401));
+  if (!user) {
+    // Find a Booker by their username, including the password
+    const booker = await Booker.findOne({ email: req.body.email }).select(
+      '+password'
+    );
+    if (
+      !booker ||
+      !(await booker.correctPassword(req.body.password, booker.password))
+    ) {
+      return next(new AppError('Incorrect email or password', 401));
+    }
+
+    // Create and send a JWT token and respond with company data
+    return createSendToken(booker, 200, req, res);
   }
-  if (!user.image) {
-    user.image = 'image';
+
+  // Check if the user exists and the provided password is correct
+  if (!(await user.correctPassword(req.body.password, user.password))) {
+    return next(new AppError('Incorrect email or password', 401));
   }
   // Create and send a JWT token and respond with user data
   createSendToken(user, 200, req, res);
@@ -180,7 +190,7 @@ exports.protect = catchAsync(async (req, res, next) => {
   //   );
   // }
 
-  console.log(req.user);
+  // console.log(req.user);
   // Set the user data in the request object and response locals
   req.user = freshUser;
   res.locals.user = freshUser;
@@ -225,11 +235,26 @@ exports.forgetPassword = catchAsync(async (req, res, next) => {
   const user = await User.findOne({ email: req.body.email });
 
   if (!user) {
-    return next(new AppError('No user found with this email', 404));
+    const booker = await Booker.findOne({ email: req.body.email });
+
+    if (!booker) {
+      return next(new AppError('No User Found with this email', 404));
+    }
+
+    const randomNum = booker.CreatePasswordResetCode();
+    await booker.save({ validateBeforeSave: false });
+    console.log(booker.passwordRestExpires);
+    console.log('current date', Date.now());
+    await new Email(booker, randomNum).sendPasswordReset();
+
+    return res.status(200).json({
+      status: 'success',
+      message: 'Reset code passed to your mail, Please check your inbox mail',
+    });
   }
+
   const randomNum = user.CreatePasswordResetCode();
   await user.save({ validateBeforeSave: false });
-  console.log(user);
 
   await new Email(user, randomNum).sendPasswordReset();
 
@@ -252,12 +277,28 @@ exports.verifyResetCode = catchAsync(async (req, res, next) => {
   });
   console.log(user);
   if (!user) {
-    return next(
-      new AppError(
-        'Invalid password Reset Code, check code from mail again!',
-        404
-      )
-    );
+    const booker = await Booker.findOne({
+      passwordRestCode: hashedResetCode,
+      passwordRestExpires: { $gt: Date.now() },
+    });
+
+    console.log(booker);
+    if (!booker) {
+      return next(
+        new AppError(
+          'Invalid password Reset Code, check code from mail again!',
+          404
+        )
+      );
+    }
+    booker.passwordRestIsused = true;
+    booker.passwordRestCode = undefined;
+    booker.passwordRestExpires = undefined;
+    booker.save({ validateBeforeSave: false });
+
+   return res.status(200).json({
+      status: 'success',
+    });
   }
   user.passwordRestIsused = true;
   user.passwordRestCode = undefined;
@@ -275,7 +316,27 @@ exports.resetPassword = catchAsync(async (req, res, next) => {
   }
   const user = await User.findOne({ email: req.body.email });
   if (!user) {
-    return next(new AppError('No user found with this email', 404));
+    const booker = await Booker.findOne({ email: req.body.email });
+    if (!booker) {
+      return next(new AppError('No user found with this email', 404));
+    }
+    if (!booker.passwordRestIsused) {
+      return next(
+        new AppError(
+          'Invalid password Reset Code, check code from mail again!',
+          404
+        )
+      );
+    }
+    booker.password = req.body.password;
+    booker.passwordConfirm = req.body.passwordConfirm;
+    booker.passwordRestIsused = undefined;
+    booker.passwordChangedAt = Date.now();
+    await booker.save();
+    return res.status(200).json({
+      status: 'success',
+      data: 'Password Updated !!',
+    });
   }
 
   if (!user.passwordRestIsused) {
