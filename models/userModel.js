@@ -83,7 +83,6 @@ const userSchema = new mongoose.Schema(
     ],
     image: {
       type: String,
-      default: 'User',
     },
     mygrage: {
       type: {

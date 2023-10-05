@@ -7,7 +7,11 @@ const catchAsync = require('../utils/catchAsync'); // Import an async error hand
 // Define the controller function to create a new car
 exports.createCar = catchAsync(async (req, res, nex) => {
   // Set the carrierId in the request body to the authenticated user's ID
-  req.body.carrierId = req.user.id;
+  if (req.user) {
+    req.body.carrierId = req.user.id;
+  } else {
+    req.body.carrierId = req.body.subCarrierId;
+  }
   // Create a new car object based on the request body data
   const newCar = await Car.create(req.body);
 

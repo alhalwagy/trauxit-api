@@ -96,11 +96,9 @@ exports.getLoadsForCarrier = catchAsync(async (req, res, next) => {
   )
     .sort()
     .paginate(countDocs);
-  console.log(features);
 
-  console.log(countDocs);
   const loads = await features.query;
-
+  console.log(loads);
   // If no available loads are found, return a 404 error
   if (loads.length === 0) {
     return next(new AppError('There is no more loads available.', 404));
@@ -150,11 +148,10 @@ exports.bookingLoads = catchAsync(async (req, res, next) => {
   // });
 });
 
+// filter the load with the distance
 exports.getLoadWithin = catchAsync(async (req, res, next) => {
   const { distance, unit } = req.params;
-
   const raduis = unit === 'mi' ? distance / 3963.2 : distance / 6378.1;
-
   //  req.user.currentLocation.coordinates[0], [req.user.currentLocation.coordinates[0]
   const loads = await Loads.find({
     PickupLocation: {
@@ -170,7 +167,7 @@ exports.getLoadWithin = catchAsync(async (req, res, next) => {
     },
   });
 
-  // console.log(distance, lat, lng, unit);
+  //Response filter the load with the distance//
   res.status(200).json({
     status: 'success',
     result: loads.length,

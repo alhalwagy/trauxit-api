@@ -13,15 +13,11 @@ const signToken = (id) => {
 
 const bookerSchema = new mongoose.Schema(
   {
-    company_id: {
-      type: String,
-      unique: true, // Ensures that each ID card number is unique in the database
-    },
     password: {
       type: String,
       required: [true, 'Company must have a Password.'], // Password of the user, required field
     },
-    companyName: {
+    groupName: {
       type: String,
     },
     address: { type: String, required: [true, 'Address is required.'] }, // Address field, required
@@ -46,8 +42,8 @@ const bookerSchema = new mongoose.Schema(
       required: [true, 'Phone Number is required'],
       unique: true,
       type: String,
-      minlength: 11,
-      maxlength: 11,
+      minlength: 12,
+      maxlength: 12,
     },
     friends: [
       {
@@ -55,20 +51,16 @@ const bookerSchema = new mongoose.Schema(
         ref: 'User', // 'user' is the name of the referenced collection
       },
     ],
-    teamName: {
-      type: String,
-    },
     role: {
       type: String,
       enum: ['company', 'teamleader'],
     },
-    team_id: {
+    group_id: {
       type: String,
       unique: true,
     },
     fullName: String,
     image: String,
-    
 
     passwordChangedAt: Date,
     passwordRestCode: String,

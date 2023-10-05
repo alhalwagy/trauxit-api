@@ -63,36 +63,16 @@ exports.signupUser = catchAsync(async (req, res, next) => {
     email: req.body.email,
   });
 
-  newUser.image = '';
   if (req.body.role === 'subcarrier') {
-    if (req.body.company_id) {
-      const company = await Booker.findOneAndUpdate(
-        { company_id: req.body.company_id },
-        { $push: { friends: newUser._id } }
-      );
+    const team = await Booker.findOneAndUpdate(
+      { group_id: req.body.group_id },
+      { $push: { friends: newUser._id } }
+    );
 
-      if (!company) {
-        await User.findByIdAndDelete(newUser.id);
-
-        return next(new AppError('There is No Company with this id'), 404);
-      }
-    } else if (req.body.team_id) {
-      const team = await Booker.findOneAndUpdate(
-        { team_id: req.body.team_id },
-        { $push: { friends: newUser._id } }
-      );
-
-      if (!team) {
-        await User.findByIdAndDelete(newUser.id);
-
-        return next(new AppError('There is No Team with this id'), 404);
-      }
-    } else {
+    if (!team) {
       await User.findByIdAndDelete(newUser.id);
 
-      return next(
-        new AppError('You Are subCarrier Must belong to team or company', 400)
-      );
+      return next(new AppError('There is No Team with this id'), 404);
     }
 
     await new Email(newUser).sendWelcome();
@@ -100,6 +80,7 @@ exports.signupUser = catchAsync(async (req, res, next) => {
     // Create and send a JWT token and respond with user data
     return createSendToken(newUser, 201, req, res);
   }
+
   await new Email(newUser).sendWelcome();
 
   createSendToken(newUser, 201, req, res);

@@ -7,6 +7,7 @@ const User = require('../models/userModel'); // Import the User model
 const AppError = require('../utils/appError'); // Import custom error handling utility
 const catchAsync = require('../utils/catchAsync'); // Import utility for catching async errors
 const Booker = require('../models/bookerModel');
+
 const multer = require('multer');
 const sharp = require('sharp');
 
@@ -78,7 +79,15 @@ exports.resizeUserImage = catchAsync(async (req, res, next) => {
     .resize(700, 700)
     .toFormat('jpeg')
     .jpeg({ quality: 90 })
-    .toFile(`public/img/${req.body.image}`);
+    .toFile(`public/img/${req.body.image}`)
+    .catch((err) => {
+      const oldImagePath = `public/img/${req.body.image}`;
+      if (fs.existsSync(oldImagePath)) {
+        // Delete the old image file
+        fs.unlinkSync(oldImagePath);
+      }
+      return next(new AppError('there is no compactable format', 400));
+    });
 
   next();
 });

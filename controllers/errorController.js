@@ -16,6 +16,7 @@ const handleDuplicateFieldsDB = (err) => {
   const value = err.errmsg.match(/([^{}]+)(?=\s*}$)/)[0].split(':')[1];
   const message = `Duplicate ${value}.`;
   return new AppError(message, 400); // Return an AppError with a 400 status code
+  console.log(err);
 };
 
 const handleTokenExpiredError = () =>

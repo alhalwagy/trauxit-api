@@ -1,4 +1,5 @@
 const { promisify } = require('util');
+const mongoose = require('mongoose');
 const jwt = require('jsonwebtoken'); // Import JWT for token handling
 const fs = require('fs');
 const multer = require('multer');
@@ -11,6 +12,7 @@ const catchAsync = require('../utils/catchAsync'); // Import utility for catchin
 
 const User = require('../models/userModel'); // Import the User model
 const Booker = require('../models/bookerModel');
+const Car = require('../models/carModel');
 
 const Email = require('../utils/email');
 
@@ -149,80 +151,44 @@ const createSendToken = async (user, statusCode, req, res) => {
 // Controller function for Company signup
 exports.signup = catchAsync(async (req, res, next) => {
   if (req.body.password != req.body.passwordConfirm) {
-    return next(new AppError('Password confirm do not match password.', 400));
+    return next(new AppError('Password confirm do not match  .', 400));
   }
-  if (!req.body.role) {
-    return next(new AppError('role Must be in body', 400));
+  console.log(req.body);
+  const group_id = Math.floor(10000000 + Math.random() * 90000000).toString();
+
+  if (
+    !req.body.groupName ||
+    !req.body.password ||
+    !req.body.address ||
+    !req.body.email ||
+    !req.body.passwordConfirm ||
+    !req.body.phoneNumber ||
+    !req.body.userName ||
+    !req.body.role
+  ) {
+    return next(new AppError('The body of request not completed.'), 400);
   }
-  if (req.body.role === 'company') {
-    if (
-      !req.body.companyName ||
-      !req.body.company_id ||
-      !req.body.password ||
-      !req.body.address ||
-      !req.body.email ||
-      !req.body.passwordConfirm ||
-      !req.body.phoneNumber ||
-      !req.body.userName ||
-      !req.body.role
-    ) {
-      return next(new AppError('The body of request not completed.'), 400);
-    }
-    const encryptedCompany_id = crypto
-      .createHash('sha256')
-      .update(req.body.group_id)
-      .digest('hex');
-    // Create a new Company based on request data
-    const newBooker = await Booker.create({
-      companyName: req.body.companyName,
-      group_id: encryptedCompany_id,
-      password: req.body.password,
-      address: req.body.address,
-      email: req.body.email,
-      passwordConfirm: req.body.passwordConfirm,
-      phoneNumber: req.body.phoneNumber,
-      userName: req.body.userName,
-      role: req.body.role,
-    });
 
-    // Create and send a JWT token and respond with Company data
-    createSendToken(newBooker, 201, req, res);
-  } else if (req.body.role === 'teamleader') {
-    console.log(req.body);
-    if (
-      !req.body.teamName ||
-      !req.body.password ||
-      !req.body.address ||
-      !req.body.email ||
-      !req.body.passwordConfirm ||
-      !req.body.phoneNumber ||
-      !req.body.userName ||
-      !req.body.role
-    ) {
-      return next(new AppError('The body of request not completed.'), 400);
-    }
-    const team_id = Math.floor(10000000 + Math.random() * 90000000).toString();
+  const encryptedCompany_id = crypto
+    .createHash('sha256')
+    .update(group_id)
+    .digest('hex');
+  // Create a new Company based on request data
+  const newBooker = await Booker.create({
+    groupName: req.body.groupName,
+    group_id: encryptedCompany_id,
+    password: req.body.password,
+    address: req.body.address,
+    email: req.body.email,
+    passwordConfirm: req.body.passwordConfirm,
+    phoneNumber: req.body.phoneNumber,
+    userName: req.body.userName,
+    role: req.body.role,
+  });
 
-    // Create a new Company based on request data
-    const encryptedTeam_id = crypto
-      .createHash('sha256')
-      .update(team_id)
-      .digest('hex');
-    const newBooker = await Booker.create({
-      teamName: req.body.teamName,
-      group_id: encryptedTeam_id,
-      password: req.body.password,
-      address: req.body.address,
-      email: req.body.email,
-      passwordConfirm: req.body.passwordConfirm,
-      phoneNumber: req.body.phoneNumber,
-      userName: req.body.userName,
-      role: req.body.role,
-    });
-    await new Email(newBooker, team_id).sendTeamId();
+  await new Email(newBooker, group_id).sendTeamId();
 
-    createSendToken(newBooker, 201, req, res);
-  }
+  createSendToken(newBooker, 201, req, res);
 });
 
 exports.logout = catchAsync(async (req, res, next) => {
@@ -243,7 +209,6 @@ exports.logout = catchAsync(async (req, res, next) => {
 // Middleware function to protect routes (check if Company is authenticated)
 exports.protect = catchAsync(async (req, res, next) => {
   let token;
-
   // Check if the token is included in the request headers or cookies
   if (
     req.headers.authorization &&
@@ -328,5 +293,74 @@ exports.updateMyPassword = catchAsync(async (req, res, next) => {
   await bookerData.save();
   res.status(200).json({
     status: 'success',
+  });
+});
+
+exports.crearteSubCarrier = catchAsync(async (req, res, next) => {
+  if (req.body.password != req.body.passwordConfirm) {
+    return next(new AppError('Password confirm do not match password.', 400));
+  }
+
+  const user = await User.create({
+    role: 'subcarrier',
+    fullName: req.body.fullName,
+    userName: req.body.userName,
+    password: req.body.password,
+    birthDate: req.body.birthDate,
+    address: req.body.address,
+    email: req.body.email,
+    phoneNumber: req.body.phoneNumber,
+  });
+  console.log(user._id);
+  console.log(req.booker.id);
+  const updatedBooker = await Booker.findByIdAndUpdate(
+    req.booker.id,
+    {
+      $push: { friends: user._id },
+    },
+    { new: true }
+  );
+  if (!updatedBooker) {
+    await User.findByIdAndDelete(user._id);
+
+    return next(new AppError('There is No Team with this id'), 404);
+  }
+  res.status(201).json({
+    status: 'success',
+    data: {
+      user,
+    },
+  });
+});
+
+exports.getMyMembers = catchAsync(async (req, res, next) => {
+  let myFriends = await Booker.findById(req.booker.id).populate({
+    path: 'friends',
+    select: 'fullName email',
+  });
+  myFriends = myFriends.friends;
+
+  // Create an array to store user-car pairs
+  const userCars = [];
+
+  // Iterate through each friend
+  for (const friend of myFriends) {
+    const friendId = friend._id;
+    const cars = await Car.find({ carrierId: friendId });
+
+    // Create a user-car pair object
+    const userCarPair = {
+      user: friend,
+      cars: cars,
+    };
+
+    userCars.push(userCarPair);
+  }
+
+  res.status(200).json({
+    status: 'success',
+    data: {
+      userCars,
+    },
   });
 });
