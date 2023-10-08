@@ -33,6 +33,8 @@ const handleValidationErrorDB = (err) => {
 const sendErrorDev = (err, req, res) => {
   if (req.originalUrl.startsWith('/api')) {
     // If the error occurred in the API, send a JSON response with error details
+    console.error(err);
+
     return res.status(err.statusCode).json({
       status: err.status,
       error: err,
@@ -49,6 +51,7 @@ const sendErrorProd = (err, req, res) => {
   if (req.originalUrl.startsWith('/api')) {
     if (err.isOperational) {
       // If it's an operational error, send a JSON response with a simplified error message
+      console.log(err);
       return res.status(err.statusCode).json({
         status: err.status,
         message: err.message,

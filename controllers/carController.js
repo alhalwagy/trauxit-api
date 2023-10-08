@@ -10,6 +10,7 @@ exports.createCar = catchAsync(async (req, res, nex) => {
   if (req.user) {
     req.body.carrierId = req.user.id;
   } else {
+    req.body.idBooker = req.booker.id;
     req.body.carrierId = req.body.subCarrierId;
   }
   // Create a new car object based on the request body data

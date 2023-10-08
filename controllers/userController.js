@@ -69,12 +69,13 @@ exports.uploadUserImage = upload.fields([
 
 //use sharp package to image preprocessing
 exports.resizeUserImage = catchAsync(async (req, res, next) => {
-  if (!req.files) {
+  if (!req.files.image) {
     return next();
   }
   // console.log(req.files);
   req.body.image = `User-${req.user.id}-${Date.now()}.jpeg`;
   // console.log(req.files.image);
+
   await sharp(req.files.image[0].buffer)
     .resize(700, 700)
     .toFormat('jpeg')
@@ -114,17 +115,21 @@ exports.updateMe = catchAsync(async (req, res, next) => {
   }
 
   // Check if an old image exists
-  if (req.files) {
-    const imageUrl = req.user.image;
-    const parts = imageUrl.split('User');
-    // Get the path to the old image
-    const oldImagePath = `public/img/User${parts[1]}`;
-    console.log(oldImagePath);
+  console.log(req.files.image);
+  if (req.files.image) {
+    if (req.user.image) {
+      const imageUrl = req.user.image;
+      console.log(req.user.image);
+      const parts = imageUrl.split('User');
+      // Get the path to the old image
+      const oldImagePath = `public/img/User${parts[1]}`;
+      console.log(oldImagePath);
 
-    // Check if the old image file exists
-    if (fs.existsSync(oldImagePath)) {
-      // Delete the old image file
-      fs.unlinkSync(oldImagePath);
+      // Check if the old image file exists
+      if (fs.existsSync(oldImagePath)) {
+        // Delete the old image file
+        fs.unlinkSync(oldImagePath);
+      }
     }
   }
 
@@ -141,8 +146,8 @@ exports.updateMe = catchAsync(async (req, res, next) => {
   );
 
   let imageUrl;
-  if (req.files) {
-    imageUrl = `http://192.168.1.16:3000/public/img/${req.body.image}`;
+  if (req.files.image) {
+    imageUrl = `http://192.168.1.23:3000/public/img/${req.body.image}`;
 
     filteredBody.image = imageUrl;
   }

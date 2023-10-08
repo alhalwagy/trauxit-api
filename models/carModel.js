@@ -30,6 +30,10 @@ const carSchema = new mongoose.Schema(
       type: Number,
       unique: true,
     },
+    idBooker: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Booker', // 'booker' is the name of the referenced collection
+    },
   },
   {
     timestamps: true,
