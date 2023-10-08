@@ -20,6 +20,8 @@ const bookerRoutes = require('./routes/bookerRouter');
 const teamleadRoutes = require('./routes/teamleadRouter');
 
 const app = express();
+app.set('view engine', 'pug');
+app.set('views', path.join(__dirname, 'views'));
 
 app.use(express.json({}));
 app.use(cors());
@@ -30,7 +32,7 @@ app.use(cors());
 
 //serving static file
 app.use('/public/img/', express.static(path.join(__dirname, 'public/img/')));
-app.set('view engine', 'pug');
+
 //development logging
 if (process.env.NODE_ENV === 'development') {
   app.use(morgan('dev'));
