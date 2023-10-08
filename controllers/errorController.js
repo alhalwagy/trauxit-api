@@ -51,14 +51,14 @@ const sendErrorProd = (err, req, res) => {
   if (req.originalUrl.startsWith('/api')) {
     if (err.isOperational) {
       // If it's an operational error, send a JSON response with a simplified error message
-      console.log(err);
+      // console.log(err);
       return res.status(err.statusCode).json({
         status: err.status,
         message: err.message,
       });
     }
     // Log non-operational errors and send a generic error response
-    console.error('ERROR 💥', err);
+    // console.error('ERROR 💥', err);
     return res.status(500).json({
       status: 'error',
       message: 'Something went very wrong',
