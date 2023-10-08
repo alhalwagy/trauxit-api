@@ -64,21 +64,6 @@ const sendErrorProd = (err, req, res) => {
       message: 'Something went very wrong',
     });
   }
-
-  if (err.isOperational) {
-    // Render a user-friendly error page for operational errors in non-API routes
-    return res.status(err.statusCode).render('error', {
-      title: 'Something went wrong',
-      msg: err.message,
-    });
-  }
-
-  // Render a generic error page for non-operational errors in non-API routes
-  console.error('ERROR 💥', err);
-  return res.status(err.statusCode).render('error', {
-    title: 'Something went wrong',
-    msg: 'Please try again later.',
-  });
 };
 
 // Export a middleware function that handles errors
@@ -87,7 +72,7 @@ module.exports = (err, req, res, next) => {
   err.status = err.status || 'error'; // Set a default status of 'error'
 
   if (process.env.NODE_ENV === 'development') {
-    // In the development environment, send detailed error responses
+    // In the development environment, send detailed eSrror responses
     sendErrorDev(err, req, res);
   } else if (process.env.NODE_ENV === 'production') {
     // In the production environment, handle specific types of errors and send appropriate responses
