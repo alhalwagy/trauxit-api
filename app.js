@@ -30,7 +30,7 @@ app.use(cors());
 
 //serving static file
 app.use('/public/img/', express.static(path.join(__dirname, 'public/img/')));
-
+app.set('view engine', 'pug');
 //development logging
 if (process.env.NODE_ENV === 'development') {
   app.use(morgan('dev'));
