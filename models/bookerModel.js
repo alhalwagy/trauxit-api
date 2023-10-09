@@ -66,6 +66,7 @@ const bookerSchema = new mongoose.Schema(
     passwordRestCode: String,
     passwordRestExpires: Date,
     passwordRestIsused: Boolean,
+    birthDate: Date,
   },
   {
     timestamps: true,

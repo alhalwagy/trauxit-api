@@ -54,19 +54,6 @@ router
   );
 
 router
-  .route('/')
-  .get(
-    adminController.protect,
-    adminController.restrictTo('admin'),
-    carrierController.getAllCarriers
-  )
-  .post(
-    adminController.protect,
-    adminController.restrictTo('admin'),
-    carrierController.createCarrier
-  );
-
-router
   .route('/:id')
   .patch(
     adminController.protect,
@@ -107,5 +94,18 @@ router
     authController.restrictTo('carrier'),
     carrierController.assignCarrierToTeamlead
   );
+
+router
+  .route('/')
+  .get(
+    adminController.protect,
+    adminController.restrictTo('admin'),
+    carrierController.getAllCarriers
+  )
+  .post(
+    adminController.protect,
+    adminController.restrictTo('admin'),
+    carrierController.createCarrier
+  ); 
 
 module.exports = router;
