@@ -30,6 +30,14 @@ router
   );
 
 router
+  .route('/mycompletedloads/')
+  .get(
+    authController.protect,
+    authController.restrictTo('carrier'),
+    carrierController.getdroupedoutLoadsForCarrier
+  );
+
+router
   .route('/:idload/calcdistancetoshoping/unit/:unit')
   .patch(
     authController.protect,
