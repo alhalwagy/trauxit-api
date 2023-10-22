@@ -17,7 +17,6 @@ const carrierRoutes = require('./routes/carrierRouter');
 const shipperRoutes = require('./routes/shipperRouter');
 const ticketRoutes = require('./routes/ticketRouter');
 const bookerRoutes = require('./routes/bookerRouter');
-const teamleadRoutes = require('./routes/teamleadRouter');
 
 const app = express();
 app.set('view engine', 'pug');
@@ -50,7 +49,6 @@ app.use('/api/v1/review', reviewRoutes);
 app.use('/api/v1/car', carRoutes);
 app.use('/api/v1/ticket', ticketRoutes);
 app.use('/api/v1/booker', bookerRoutes);
-app.use('/api/v1/teamlead', teamleadRoutes);
 
 app.get('/favicon.ico', (req, res) => {
   // Send a 204 No Content response to indicate that there's no favicon.

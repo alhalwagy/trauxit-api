@@ -1,18 +1,24 @@
 const { promisify } = require('util');
-const jwt = require('jsonwebtoken'); // Import JWT for token handling
+const jwt = require('jsonwebtoken');
 const crypto = require('crypto');
-const fs = require('fs'); // Require the 'fs' module for file operations
+const fs = require('fs');
 
-const User = require('../models/userModel'); // Import the User model
-const AppError = require('../utils/appError'); // Import custom error handling utility
-const catchAsync = require('../utils/catchAsync'); // Import utility for catching async errors
+const User = require('../models/userModel');
+const AppError = require('../utils/appError');
+const catchAsync = require('../utils/catchAsync');
 const Booker = require('../models/bookerModel');
+const Authentication = require('../models/authModel');
 
 const multer = require('multer');
 const sharp = require('sharp');
 
 exports.getMe = catchAsync(async (req, res, next) => {
-  const user = await User.findById(req.user.id);
+  const user = await Authentication.findById(req.user.id);
+
+  const userData = await User.findOne({ userid: req.user.id });
+  if (!userData) {
+    return next(new AppError('User not have A Data', 404));
+  }
   user.password = undefined;
   if (!user) {
     return next(AppError('User not found', 404));
@@ -22,12 +28,13 @@ exports.getMe = catchAsync(async (req, res, next) => {
     status: 'success',
     data: {
       user,
+      userData,
     },
   });
 });
 
 exports.updateMyPassword = catchAsync(async (req, res, next) => {
-  const userData = await User.findById(req.user.id);
+  const userData = await Authentication.findById(req.user.id);
   if (!userData) {
     return next(new AppError('User not found. Please log in again.'));
   }
@@ -35,7 +42,12 @@ exports.updateMyPassword = catchAsync(async (req, res, next) => {
     return next(new AppError('Password confirm do not match password.', 400));
   }
 
-  if (!userData.correctPassword(req.body.currentPassword, req.user.password)) {
+  if (
+    !(await userData.correctPassword(
+      req.body.currentPassword,
+      req.user.password
+    ))
+  ) {
     return next(new AppError('Your current password is wrong.', 401));
   }
 
@@ -48,7 +60,6 @@ exports.updateMyPassword = catchAsync(async (req, res, next) => {
 
 const multerStorage = multer.memoryStorage();
 
-// Check if user upload only images or not
 const multerFilter = (req, file, cb) => {
   console.log(file);
   if (file.mimetype.startsWith('image')) {
@@ -57,9 +68,9 @@ const multerFilter = (req, file, cb) => {
     cb(new AppError('Not an image! Please upload only images.', 400));
   }
 };
-//give filter and storage to multer
+
 const upload = multer({ storage: multerStorage, fileFilter: multerFilter });
-//upload image
+
 exports.uploadUserImage = upload.fields([
   {
     name: 'image',
@@ -67,7 +78,6 @@ exports.uploadUserImage = upload.fields([
   },
 ]);
 
-//use sharp package to image preprocessing
 exports.resizeUserImage = catchAsync(async (req, res, next) => {
   if (!req.files.image) {
     return next();

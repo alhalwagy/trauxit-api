@@ -1,6 +1,6 @@
-const express = require('express');
-const adminController = require('../controllers/adminController'); // Import admin controller
+// const express = require('express');
+// const adminController = require('../controllers/adminController'); // Import admin controller
 
-const router = express.Router();
+// const router = express.Router();
 
-module.exports = router;
+// module.exports = router;

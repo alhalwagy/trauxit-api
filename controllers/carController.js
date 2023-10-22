@@ -1,10 +1,8 @@
-// Import necessary modules and dependencies
-const Car = require('../models/carModel'); // Import the Car model
+const Car = require('../models/carModel');
 const User = require('../models/userModel');
-const AppError = require('../utils/appError'); // Import an error handling utility
-const catchAsync = require('../utils/catchAsync'); // Import an async error handling utility
+const AppError = require('../utils/appError');
+const catchAsync = require('../utils/catchAsync');
 
-// Define the controller function to create a new car
 exports.createCar = catchAsync(async (req, res, nex) => {
   // Set the carrierId in the request body to the authenticated user's ID
   if (req.user) {

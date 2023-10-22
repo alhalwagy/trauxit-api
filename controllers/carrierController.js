@@ -3,14 +3,13 @@ const axios = require('axios');
 const crypto = require('crypto');
 const mongoose = require('mongoose');
 
-const AppError = require('../utils/appError'); // Import custom error handling utility
-const User = require('../models/userModel'); // Import the User model
+const AppError = require('../utils/appError');
+const User = require('../models/userModel');
 const catchAsync = require('../utils/catchAsync');
 const Loads = require('../models/loadsModel');
 const Booker = require('../models/bookerModel');
 const APIFeatures = require('../utils/apiFeatures');
 
-//get location for carriers
 exports.locationdectecd = catchAsync(async (req, res, next) => {
   const latlng = req.params.latlng;
   const unit = req.params.unit;
@@ -41,7 +40,6 @@ exports.locationdectecd = catchAsync(async (req, res, next) => {
   });
 });
 
-//Get All Carriers Data for Admin
 exports.getAllCarriers = catchAsync(async (req, res, next) => {
   const carriers = await User.find({ role: 'carrier' });
   if (carriers.length === 0) {
@@ -56,7 +54,6 @@ exports.getAllCarriers = catchAsync(async (req, res, next) => {
   });
 });
 
-//For Admin
 exports.updateCarriers = catchAsync(async (req, res, next) => {
   if (req.body.password) {
     req.body.password = await bcrypt.hash(req.body.password, 14);
@@ -80,7 +77,6 @@ exports.updateCarriers = catchAsync(async (req, res, next) => {
   });
 });
 
-//For Admin
 exports.getCarrier = catchAsync(async (req, res, next) => {
   const carrier = await User.findById(req.params.id);
   if (!carrier) {
@@ -94,7 +90,6 @@ exports.getCarrier = catchAsync(async (req, res, next) => {
   });
 });
 
-//For Admin
 exports.deleteCarriers = catchAsync(async (req, res, next) => {
   // Find the Carriers by ID and delete it.
   const carrier = await User.findByIdAndDelete(req.params.id);

@@ -1,10 +1,10 @@
-// Import necessary models and modules
+
 const axios = require('axios');
 
-const Loads = require('../models/loadsModel'); // Import the Loads model
-const User = require('../models/userModel'); // Import the User model
-const AppError = require('../utils/appError'); // Import an error handling utility
-const catchAsync = require('../utils/catchAsync'); // Import an async error handling utility
+const Loads = require('../models/loadsModel'); 
+const User = require('../models/userModel'); 
+const AppError = require('../utils/appError'); 
+const catchAsync = require('../utils/catchAsync'); 
 const APIFeatures = require('./../utils/apiFeatures');
 
 // Controller function to create a new load

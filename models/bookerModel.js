@@ -15,14 +15,13 @@ const bookerSchema = new mongoose.Schema(
   {
     password: {
       type: String,
-      required: [true, 'Company must have a Password.'], // Password of the user, required field
+      required: [true, 'Company must have a Password.'],
     },
     groupName: {
       type: String,
     },
-    address: { type: String, required: [true, 'Address is required.'] }, // Address field, required
-    rating: Number, // User's rating
-    // To check the given token same as database token
+    address: { type: String, required: [true, 'Address is required.'] },
+    rating: Number,
     hashToken: {
       type: String,
     },
@@ -48,7 +47,7 @@ const bookerSchema = new mongoose.Schema(
     friends: [
       {
         type: mongoose.Schema.Types.ObjectId,
-        ref: 'User', // 'user' is the name of the referenced collection
+        ref: 'User',
       },
     ],
     role: {
@@ -73,13 +72,11 @@ const bookerSchema = new mongoose.Schema(
   }
 );
 
-// Post-save middleware to generate and save a JWT hash token
 bookerSchema.post('save', function (doc, next) {
   doc.hashToken = signToken(doc._id);
   next();
 });
 
-// Pre-save middleware to hash the password
 bookerSchema.pre('save', async function (next) {
   if (!this.isModified('password')) {
     return next();
@@ -90,21 +87,18 @@ bookerSchema.pre('save', async function (next) {
   next();
 });
 
-// Set toJSON options to remove the password field from JSON responses
 bookerSchema.set('toJSON', {
   transform: function (doc, ret) {
     delete ret.password;
   },
 });
 
-// Set toJSON options to remove the hashToken field from JSON responses
 bookerSchema.set('toJSON', {
   transform: function (doc, ret) {
     delete ret.hashToken;
   },
 });
 
-// Method to compare a candidate password with the user's hashed password
 bookerSchema.methods.correctPassword = async function (
   candidatePassword,
   userPassword

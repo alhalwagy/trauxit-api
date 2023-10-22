@@ -20,7 +20,6 @@ exports.getAllShippers = catchAsync(async (req, res, next) => {
   });
 });
 
-//For Admin
 exports.updateShipper = catchAsync(async (req, res, next) => {
   if (req.body.password) {
     req.body.password = await bcrypt.hash(req.body.password, 14);
@@ -44,7 +43,6 @@ exports.updateShipper = catchAsync(async (req, res, next) => {
   });
 });
 
-//For Admin
 exports.getShipper = catchAsync(async (req, res, next) => {
   const shipper = await User.findById(req.params.id);
   if (!shipper) {
@@ -58,7 +56,6 @@ exports.getShipper = catchAsync(async (req, res, next) => {
   });
 });
 
-//For Admin
 exports.deleteShipper = catchAsync(async (req, res, next) => {
   // Find the Carriers by ID and delete it.
   const shipper = await User.findByIdAndDelete(req.params.id);

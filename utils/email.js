@@ -5,7 +5,7 @@ const htmlToText = require('html-to-text');
 module.exports = class Email {
   constructor(user, randomNum) {
     this.to = user.email;
-    if (user.fullName) this.firstName = user.fullName.split(' ')[0];
+    if (user.userName) this.firstName = user.userName;
     this.randomNum = randomNum;
     this.from = `Trauxit mail <${process.env.EMAIL_FROM}>`;
     if (user.teamName) this.teamName = user.teamName;

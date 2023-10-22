@@ -3,8 +3,6 @@ const Notify = require('../models/notificationModel');
 const AppError = require('../utils/appError'); // Import custom error handling utility
 const catchAsync = require('../utils/catchAsync'); // Import utility for catching async errors
 
-
-
 //Create Notification and return Response
 exports.createNotification = catchAsync(async (req, res, next) => {
   const load = req.load;
@@ -16,7 +14,6 @@ exports.createNotification = catchAsync(async (req, res, next) => {
     idShipper,
     text,
   });
-
 
   res.status(200).json({
     status: 'success',

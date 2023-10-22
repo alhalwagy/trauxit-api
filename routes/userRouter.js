@@ -9,7 +9,9 @@ const {
 
 const router = express.Router(); // Create an Express router
 
-router.route('/signup').post(authController.signupUser);
+router
+  .route('/signup')
+  .post(authController.signupAuth, authController.signupUser);
 
 router.route('/login').post(authController.login);
 

@@ -1,7 +1,7 @@
-// Import the AppError utility
+
 const AppError = require('../utils/appError');
 
-// Define functions to handle specific types of errors
+
 const handleCastErrorDB = (err) => {
   // Create an error message for invalid data type casting
   const message = `Invalid ${err.path}: ${err.value}.`;
@@ -9,7 +9,7 @@ const handleCastErrorDB = (err) => {
 };
 
 const handleJsonWebTokenError = () =>
-  new AppError('Invalid access. Please log in again !', 401); // Return an AppError for invalid JWT token
+  new AppError('Invalid access. Please log in again !', 401); 
 
 const handleDuplicateFieldsDB = (err) => {
   // Extract the duplicate value from the error message
@@ -20,7 +20,7 @@ const handleDuplicateFieldsDB = (err) => {
 };
 
 const handleTokenExpiredError = () =>
-  new AppError('Your token has been expired. Please log in again!', 401); // Return an AppError for expired JWT token
+  new AppError('Your token has been expired. Please log in again!', 401); 
 
 const handleValidationErrorDB = (err) => {
   // Extract error messages from validation errors
@@ -29,7 +29,6 @@ const handleValidationErrorDB = (err) => {
   return new AppError(message, 400); // Return an AppError with a 400 status code
 };
 
-// Define a function to send detailed error responses during development
 const sendErrorDev = (err, req, res) => {
   if (req.originalUrl.startsWith('/api')) {
     // If the error occurred in the API, send a JSON response with error details
@@ -46,7 +45,6 @@ const sendErrorDev = (err, req, res) => {
   console.error('ERROR 💥', err);
 };
 
-// Define a function to send error responses in a production environment
 const sendErrorProd = (err, req, res) => {
   if (req.originalUrl.startsWith('/api')) {
     if (err.isOperational) {
@@ -66,7 +64,6 @@ const sendErrorProd = (err, req, res) => {
   }
 };
 
-// Export a middleware function that handles errors
 module.exports = (err, req, res, next) => {
   err.statusCode = err.statusCode || 500; // Set a default status code of 500
   err.status = err.status || 'error'; // Set a default status of 'error'
