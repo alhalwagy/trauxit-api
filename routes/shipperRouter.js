@@ -33,7 +33,7 @@ router
   .delete(
     adminController.protect,
     adminController.restrictTo('admin'),
-    shipperController.deleteShipper
+    shipperController.deleteShipper 
   );
 
 router

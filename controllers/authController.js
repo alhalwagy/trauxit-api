@@ -16,12 +16,16 @@ const signToken = (id) => {
 };
 
 const createSendToken = async (auth, statusCode, req, res) => {
-  const token = signToken(auth._id);
+  const token = signToken(auth.userData._id);
   // Generate a new JWT token for the auth
   const userData = auth;
-  const saveHashToken = await Authentication.findByIdAndUpdate(auth._id, {
-    hashToken: token,
-  });
+  console.log(userData);
+  const saveHashToken = await Authentication.findByIdAndUpdate(
+    auth.userData._id,
+    {
+      hashToken: token,
+    }
+  );
 
   // Define cookie options
   const cookieOptions = {
@@ -43,12 +47,14 @@ const createSendToken = async (auth, statusCode, req, res) => {
     status: 'success',
     token,
     data: {
-      userData,
+      userData: userData.userData,
+      user_info: userData.user_info,
     },
   });
 };
 
 exports.signupAuth = catchAsync(async (req, res, next) => {
+  console.log(req.body);
   if (req.body.password != req.body.passwordConfirm) {
     return next(new AppError('Password confirm do not match password.', 400));
   }
@@ -83,13 +89,14 @@ exports.login = catchAsync(async (req, res, next) => {
   }
 
   const user_info = await User.findOne({ userid: user._id });
-  const userData = { ...user._doc, user_info };
+
+  const userData = { ...user._doc };
   if (!user_info) {
     return next(new AppError('there is no data for user', 401));
   }
 
   // Create and send a JWT token and respond with user data
-  createSendToken(userData, 200, req, res);
+  createSendToken({ userData, user_info }, 200, req, res);
 });
 
 exports.protect = catchAsync(async (req, res, next) => {
@@ -268,13 +275,13 @@ exports.signupUser = catchAsync(async (req, res, next) => {
       phoneNumber: req.body.phoneNumber,
       userid: req.user.id,
     });
-    const userData = { ...req.user._doc, user_info };
+    const userData = { ...req.user._doc };
     console.log(
       '..................................................................................'
     );
-    console.log(userData);
+    console.log({ userData });
     await new Email(req.user).sendWelcome();
-    return createSendToken(userData, 201, req, res);
+    return createSendToken({ userData, user_info }, 201, req, res);
   } else if (req.user.role === 'subcarrier') {
     const user_info = await User.create({
       fullName: req.body.fullName,
@@ -293,10 +300,10 @@ exports.signupUser = catchAsync(async (req, res, next) => {
       await Authentication.findByIdAndDelete(req.user.id);
       return next(new AppError('There is No Team with this id'), 404);
     }
-    const userData = { ...req.user._doc, user_info };
+    const userData = { ...req.user._doc };
     await new Email(req.user).sendWelcome();
     // Create and send a JWT token and respond with user data
-    return createSendToken(userData, 201, req, res);
+    return createSendToken({ userData, user_info }, 201, req, res);
   } else if (req.user.role === 'company' || req.user.role === 'teamlead') {
     if (req.body.password != req.body.passwordConfirm) {
       return next(new AppError('Password confirm do not match.', 400));
@@ -321,7 +328,7 @@ exports.signupUser = catchAsync(async (req, res, next) => {
     });
 
     await new Email(req.user, group_id).sendTeamId();
-    const userData = { ...req.user._doc, user_info };
-    return createSendToken(userData, 201, req, res);
+    const userData = { ...req.user._doc };
+    return createSendToken({ userData, user_info }, 201, req, res);
   }
 });

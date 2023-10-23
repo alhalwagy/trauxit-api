@@ -42,7 +42,7 @@ module.exports = class Email {
     await this.newTransport().sendMail(mailOptions);
   }
   async sendWelcome() {
-    await this.send('welcome', 'Welcome to the Trauxit Family!');
+    await this.send('welcomeMail', 'Welcome to the Trauxit Family!');
   }
   async sendPasswordReset() {
     await this.send(

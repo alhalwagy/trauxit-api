@@ -6,7 +6,6 @@ const bcrypt = require('bcrypt');
 const slugify = require('slugify');
 const validator = require('validator');
 
-
 const userSchema = new mongoose.Schema(
   {
     fullName: {

@@ -1,0 +1,70 @@
+doctype html
+html(lang='en')
+  head
+    meta(charset='UTF-8')
+    meta(http-equiv='X-UA-Compatible', content='IE=edge')
+    meta(name='viewport', content='width=device-width, initial-scale=1.0')
+    title Trauxit
+    link(rel='icon', type='image/x-icon', href='/img/fav.png')
+    link(rel='preconnect', href='https://fonts.googleapis.com')
+    link(rel='preconnect', href='https://fonts.gstatic.com', crossorigin='')
+    link(href='https://fonts.googleapis.com/css2?family=Raleway:ital,wght@0,300;0,400;1,100;1,300&display=swap', rel='stylesheet')
+    link(href='https://unpkg.com/aos@2.3.1/dist/aos.css', rel='stylesheet')
+    link(rel='stylesheet', href='emailMsg/css/owl.carousel.min.css')
+    link(rel='stylesheet', href='emailMsg/css/owl.theme.default.min.css')
+    link(rel='stylesheet', href='emailMsg/css/all.min.css')
+    link(rel='stylesheet', href='emailMsg/css/bootstrap.css')
+    link(rel='stylesheet', href='emailMsg/css/style.css')
+    style.
+  body
+    section.container.pt-5.pb-5
+      .home
+        .email__msg
+          .logo__body
+            img.logo(alt=' ', src='emailMsg//img/Logo. 1.png')
+            h1 TRAUXIT
+          .email__body
+            p.email__para Hello,Username
+            h1.email__title Nice to meet you.!
+            img.msg(alt='', src='emailMsg//img/msg.jpeg')
+            p.msg__para
+              | To active your account, we need to know you received this Email. Please click
+              | on the button to
+              | confirm that.
+            button.msg__btn verify my account
+        .thank
+          h2.thank__title Thank you for choosing Trauxit
+          p.thank__para Explore AI products and solutions
+          p.ai__para
+            | AI is already here,built into our product and services, and available for
+            | organizations and
+            | developers to create their own.
+          hr
+    script(src=' https://unpkg.com/aos@2.3.1/dist/aos.js')
+    script(src='emailMsg/js/popper.min.js')
+    script(src='emailMsg/js/jquery-3.3.1.slim.min.js')
+    script(src='emailMsg/js/bootstrap.js')
+    script(src='emailMsg/js/js.js')
+    script.
+      AOS.init();
+    script(src='emailMsg/js/owl.carousel.min.js')
+    script.
+      $('.owl-carousel').owlCarousel({
+      loop: true,
+      margin: 10,
+      nav: false,
+      dots: false,
+      autoplayTimeout: 3000,
+      autoplayHoverPause: true,
+      responsive: {
+      0: {
+      items: 1
+      },
+      600: {
+      items: 1
+      },
+      1000: {
+      items: 4
+      }
+      }
+      })

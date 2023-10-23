@@ -1,10 +1,9 @@
-
 const axios = require('axios');
 
-const Loads = require('../models/loadsModel'); 
-const User = require('../models/userModel'); 
-const AppError = require('../utils/appError'); 
-const catchAsync = require('../utils/catchAsync'); 
+const Loads = require('../models/loadsModel');
+const User = require('../models/userModel');
+const AppError = require('../utils/appError');
+const catchAsync = require('../utils/catchAsync');
 const APIFeatures = require('./../utils/apiFeatures');
 
 // Controller function to create a new load
@@ -90,7 +89,7 @@ exports.getLoadsForCarrier = catchAsync(async (req, res, next) => {
   const features = new APIFeatures(
     Loads.find({ status: 'available' }).populate({
       path: 'idShipper',
-      select: 'fullName userName role address ',
+      select: 'email userName role ',
     }),
     req.query
   )

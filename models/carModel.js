@@ -4,14 +4,16 @@ const carSchema = new mongoose.Schema(
   {
     carrierId: {
       type: mongoose.Schema.ObjectId,
-      ref: 'User',
+      ref: 'Authentication',
       validate: {
         validator: async function (carrier) {
           // Check if a User with the given id exists
-          const check = await mongoose.model('User').findById(carrier);
+          const check = await mongoose
+            .model('Authentication')
+            .findById(carrier);
           return check;
         },
-        message: 'There is no Shipper with this name or Id',
+        message: 'There is no Carrier with this name or Id',
       },
     },
     USDot: {

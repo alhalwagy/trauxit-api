@@ -11,6 +11,7 @@ const Authentication = require('../models/authModel');
 
 const multer = require('multer');
 const sharp = require('sharp');
+const { auth } = require('firebase-admin');
 
 exports.getMe = catchAsync(async (req, res, next) => {
   const user = await Authentication.findById(req.user.id);
@@ -80,9 +81,10 @@ exports.uploadUserImage = upload.fields([
 
 exports.resizeUserImage = catchAsync(async (req, res, next) => {
   if (!req.files.image) {
+    console.log('ADFFFS');
     return next();
   }
-  // console.log(req.files);
+  console.log(req.files);
   req.body.image = `User-${req.user.id}-${Date.now()}.jpeg`;
   // console.log(req.files.image);
 
@@ -114,7 +116,9 @@ const filterObj = (obj, ...allowedFields) => {
 };
 
 exports.updateMe = catchAsync(async (req, res, next) => {
-  console.log(req.files);
+  console.log(req.body);
+  let data = {};
+  // console.log(req.files);
   if (req.body.password || req.body.passwordConfirm) {
     return next(
       new AppError(
@@ -125,31 +129,33 @@ exports.updateMe = catchAsync(async (req, res, next) => {
   }
 
   // Check if an old image exists
-  console.log(req.files.image);
+  console.log(req.files);
   if (req.files.image) {
-    if (req.user.image) {
-      const imageUrl = req.user.image;
-      console.log(req.user.image);
-      const parts = imageUrl.split('User');
-      // Get the path to the old image
-      const oldImagePath = `public/img/User${parts[1]}`;
-      console.log(oldImagePath);
+    const imageUrl = await User.findOne({ userid: req.user.id });
+    if(imageUrl.image){
+    // console.log(req.user.image);
+    const parts = imageUrl.image.split('User');
+    // Get the path to the old image
+    const oldImagePath = `public/img/User${parts[1]}`;
+    console.log(
+      '.....................................................................'
+    );
 
-      // Check if the old image file exists
-      if (fs.existsSync(oldImagePath)) {
-        // Delete the old image file
-        fs.unlinkSync(oldImagePath);
-      }
+    console.log(oldImagePath);
+
+    // Check if the old image file exists
+    if (fs.existsSync(oldImagePath)) {
+      // Delete the old image file
+      fs.unlinkSync(oldImagePath);
     }
+  }
   }
 
   //2) Filtered out unwanted fields that are not allowed to be updated
   const filteredBody = filterObj(
     req.body,
     'fullName',
-    'email',
     'phoneNumber',
-    'userName',
     'birthDate',
     'address',
     'mygrage'
@@ -161,18 +167,35 @@ exports.updateMe = catchAsync(async (req, res, next) => {
 
     filteredBody.image = imageUrl;
   }
-  console.log(filteredBody);
+  // console.log(filteredBody);
 
+  if (req.body.email || req.body.userName) {
+    const authUser = await Authentication.findByIdAndUpdate(
+      req.user.id,
+      {
+        ...(req.body.email && { email: req.body.email }),
+        ...(req.body.userName && { userName: req.body.userName }),
+      },
+      { new: true, runValidators: true }
+    );
+    console.log(authUser);
+    data.userData = authUser;
+  }
+  console.log(filteredBody);
   //3) Update the user document
-  const updatedUser = await User.findByIdAndUpdate(req.user.id, filteredBody, {
-    new: true,
-    runValidators: true,
-  });
-  updatedUser.password = undefined;
+  if (Object.keys(filteredBody).length > 0) {
+    const updatedUser = await User.findOneAndUpdate(
+      { userid: req.user.id },
+      filteredBody,
+      {
+        new: true,
+        runValidators: true,
+      }
+    );
+    data.user_info = updatedUser;
+  }
   res.status(200).json({
     status: 'success',
-    data: {
-      user: updatedUser,
-    },
+    data,
   });
 });

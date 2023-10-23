@@ -5,19 +5,16 @@ const catchAsync = require('../utils/catchAsync');
 
 exports.createCar = catchAsync(async (req, res, nex) => {
   // Set the carrierId in the request body to the authenticated user's ID
-  if (req.user) {
-    req.body.carrierId = req.user.id;
-  } else {
-    req.body.idBooker = req.booker.id;
-    req.body.carrierId = req.body.subCarrierId;
-  }
+
+  req.body.carrierId = req.user._id;
+  console.log(req.body.carrierId);
   // Create a new car object based on the request body data
   const newCar = await Car.create(req.body);
 
   // Populate the 'carrierId' field in the new car with additional user data
   await newCar.populate({
     path: 'carrierId',
-    select: 'fullName userName role address companyName',
+    select: 'userName role email',
   });
   await newCar.save();
   // Send a JSON response with a 201 (Created) status code
@@ -109,7 +106,7 @@ exports.getCar = catchAsync(async (req, res, next) => {
 exports.getMyCar = catchAsync(async (req, res, next) => {
   console.log(req.user.userName);
   console.log(req.body);
-  const myCars = await Car.find({ carrierId: req.user.id });
+  const myCars = await Car.find({ carrierId: req.user._id });
   if (myCars.length === 0) {
     // Return an error if the Carriers is not found.
     return next(new AppError('Not Found This car', 404));
