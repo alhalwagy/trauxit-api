@@ -4,8 +4,9 @@ const htmlToText = require('html-to-text');
 
 module.exports = class Email {
   constructor(user, randomNum) {
+    console.log(user);
     this.to = user.email;
-    if (user.userName) this.firstName = user.userName;
+    if (user.userName) this.userName = user.userName;
     this.randomNum = randomNum;
     this.from = `Trauxit mail <${process.env.EMAIL_FROM}>`;
     if (user.teamName) this.teamName = user.teamName;
@@ -24,7 +25,7 @@ module.exports = class Email {
   async send(template, subject) {
     //1) Render HTML based on pug template
     const html = pug.renderFile(`${__dirname}/../views/${template}.pug`, {
-      firstName: this.firstName,
+      userName: this.userName,
       teamName: this.teamName,
       randomNum: this.randomNum,
       subject,

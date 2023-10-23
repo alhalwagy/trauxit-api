@@ -5,28 +5,295 @@ html(lang='en')
     meta(http-equiv='X-UA-Compatible', content='IE=edge')
     meta(name='viewport', content='width=device-width, initial-scale=1.0')
     title Trauxit
-    link(rel='icon', type='image/x-icon', href='/img/fav.png')
-    link(rel='preconnect', href='https://fonts.googleapis.com')
-    link(rel='preconnect', href='https://fonts.gstatic.com', crossorigin='')
-    link(href='https://fonts.googleapis.com/css2?family=Raleway:ital,wght@0,300;0,400;1,100;1,300&display=swap', rel='stylesheet')
-    link(href='https://unpkg.com/aos@2.3.1/dist/aos.css', rel='stylesheet')
-    link(rel='stylesheet', href='emailMsg/css/owl.carousel.min.css')
-    link(rel='stylesheet', href='emailMsg/css/owl.theme.default.min.css')
-    link(rel='stylesheet', href='emailMsg/css/all.min.css')
-    link(rel='stylesheet', href='emailMsg/css/bootstrap.css')
-    link(rel='stylesheet', href='emailMsg/css/style.css')
     style.
+      .home {
+      border: 1px solid #eee;
+      border-radius: 12px;
+      box-shadow: 1px 0 10px 0 rgba(0, 0, 0, .10);
+      width: 50%;
+      margin: auto !important;
+      /*text-align: center;
+      display: flex;
+      flex-direction: column;*/
+      }/*
+      .email__msg{
+      margin: auto !important;
+      }
+      h1 {
+      color: #9B9CA0;
+      text-align: center;
+      }
+      .welcome {
+      font-weight: bold;
+      margin: auto;
+      width: 300px;
+      font-size: 30px;
+      color: #000;
+      margin-top: 20px;
+      }
+      .email__para,
+      .discover__para,
+      .contact__para {
+      margin: auto;
+      margin-top: 20px;
+      font-size: 20px;
+      color: #646363;
+      width: 350px;
+      }
+      .discover__para {
+      width: 300px;
+      margin-bottom: 15px;
+      }
+      .contact__para {
+      margin-top: 10px;
+      padding-bottom: 15px;
+      }
+      .email__para a,
+      .discover__para a,
+      .contact__para a {
+      color: #FF8201;
+      }
+      .email__btn {
+      color: #fff;
+      background-color: #FF8201;
+      padding: 8px 50px;
+      border-radius: 8px;
+      border: none;
+      cursor: pointer;
+      font-size: 20px;
+      -webkit-border-radius: 8px;
+      -moz-border-radius: 8px;
+      -ms-border-radius: 8px;
+      -o-border-radius: 8px;
+      margin-top: 25px;
+      }
+      .event__title,
+      .question__title {
+      font-weight: bold;
+      margin: auto;
+      font-size: 27px;
+      color: #000;
+      margin-top: 25px;
+      }
+      .question__title {
+      padding-top: 15px;
+      margin-top: 0px;
+      }
+      .have {
+      background-color: #d3d3d360;
+      border-radius: 0px 0 12px 12px;
+      -webkit-border-radius: 0px 0 12px 12px;
+      -moz-border-radius: 0px 0 12px 12px;
+      -ms-border-radius: 0px 0 12px 12px;
+      -o-border-radius: 0px 0 12px 12px;
+      padding-bottom: 1px;
+      }
+      .links{
+      display: flex;
+      align-items: center;
+      justify-content: space-around;
+      width: 50%;
+      margin:15px auto !important;
+      text-align: center;
+      }
+      .links a{
+      color: #FF8201;
+      font-size: 17px;
+      font-weight: 500;
+      }
+      @media (min-width:0) and (max-width:600px) {
+      .home{
+      width: 100%;
+      }
+      .welcome,
+      .email__para,
+      .event__title,
+      .discover__para,
+      .question__title,
+      .contact__para{
+      padding-left: 40px;
+      }
+      .email__para,
+      .contact__para,
+      .discover__para{
+      width: 100%;
+      padding-right: 10px;
+      font-size: 17px;
+      }
+      .email__btn{
+      margin-left: 0 !important;
+      }
+      .links{
+      width: 100%;
+      }
+      .welcome{
+      font-size: 25px;
+      width: 300px;
+      }
+      .event__title,
+      .question__title{
+      font-size: 25px;
+      }
+      }
+      @media (min-width:600px) and (max-width:900px) {
+      .home{
+      width: 75%;
+      }
+      .email__btn{
+      margin-left: -20px !important;
+      }
+      }
+      @media (min-width:900px) and (max-width:1200px) {
+      .home {
+      width: 55%;
+      }
+      .email__btn {
+      margin-left: -10px !important;
+      }
+      } */
+      .logo__body{
+      display: flex;
+      align-items: center;
+      }
+      .logo__body h1{
+      font-size: 20px;
+      }
+      .logo {
+      width: 60px;
+      padding: 20px;
+      padding-right: 5px;
+      }
+      .email__body{
+      margin: auto;
+      text-align: center;
+      }
+      .email__para{
+      font-size: 20px;
+      color: #FF8201;
+      text-transform: capitalize;
+      font-weight: bold;
+      margin-bottom: 0;
+      }
+      .email__title{
+      font-size: 30px;
+      font-weight: bold;
+      margin-top: 0;
+      }
+      .msg{
+      width: 500px;
+      }
+      .msg__para{
+      font-size: 15px;
+      text-align: center !important;
+      margin: auto !important;
+      font-weight: 500;
+      color: #777;
+      width: 450px;
+      }
+      .msg__btn{
+      text-transform: uppercase;
+      font-size: 15px;
+      background-color: #FF8201;
+      padding: 15px 60px;
+      border-radius: 50px;
+      -webkit-border-radius: 50px;
+      -moz-border-radius: 50px;
+      -ms-border-radius: 50px;
+      -o-border-radius: 50px;
+      margin-top: 30px;
+      color: #fff;
+      font-weight: 500;
+      border: 1px solid #FF8201;
+      letter-spacing: 3px;
+      margin-bottom: 50px;
+      }
+      .thank{
+      background-color: #e6e3e36e;
+      text-align: center;
+      padding-bottom: 1px;
+      border-radius: 0px 0px 12px 12px;
+      -webkit-border-radius: 0px 0px 12px 12px;
+      -moz-border-radius: 0px 0px 12px 12px;
+      -ms-border-radius: 0px 0px 12px 12px;
+      -o-border-radius: 0px 0px 12px 12px;
+      }
+      .thank__title{
+      font-size: 25px;
+      font-weight: 500;
+      color: #333;
+      padding-top: 20PX;
+      }
+      .thank__para{
+      font-size: 17px;
+      font-weight: 500;
+      margin-bottom: 0;
+      padding-bottom: 0;
+      }
+      .ai__para{
+      color: #333;
+      font-size: 12px;
+      width: 400px;
+      margin: auto;
+      margin-top: 0;
+      padding-top: 0;
+      padding-bottom: 15px;
+      }
+      hr{
+      width: 450px;
+      padding-bottom: 10px;
+      }
+      @media (min-width:0) and (max-width:600px) {
+      .home {
+      width: 100%;
+      }
+      .msg,
+      .msg__para,
+      .ai__para,
+      hr{
+      width: 100%;
+      }
+      .thank__title{
+      font-size: 20px;
+      }
+      .thank__para{
+      font-size: 15px;
+      }
+      .ai__para{
+      font-size: 10px;
+      }
+      .msg__para{
+      padding: 0 10px;
+      }
+      .msg__btn{
+      padding: 15px 40px;
+      }
+      }
+      @media (min-width:600px) and (max-width:900px) {
+      .home {
+      width: 75%;
+      }
+      .email__btn {
+      margin-left: -20px !important;
+      }
+      }
+      @media (min-width:900px) and (max-width:1200px) {
+      .home {
+      width: 55%;
+      }
+      .email__btn {
+      margin-left: -10px !important;
+      }
+      }
   body
     section.container.pt-5.pb-5
       .home
         .email__msg
           .logo__body
-            img.logo(alt=' ', src='emailMsg//img/Logo. 1.png')
-            h1 TRAUXIT
+            img.logo(alt=' ', src='https://trauxit.app/emailMsg/img/Logo.png')
           .email__body
-            p.email__para Hello,Username
+            p.email__para Hello, #{userName}
             h1.email__title Nice to meet you.!
-            img.msg(alt='', src='emailMsg//img/msg.jpeg')
+            img.msg(alt='', src='https://trauxit.app/emailMsg/img/msg.jpeg')
             p.msg__para
               | To active your account, we need to know you received this Email. Please click
               | on the button to
@@ -40,31 +307,3 @@ html(lang='en')
             | organizations and
             | developers to create their own.
           hr
-    script(src=' https://unpkg.com/aos@2.3.1/dist/aos.js')
-    script(src='emailMsg/js/popper.min.js')
-    script(src='emailMsg/js/jquery-3.3.1.slim.min.js')
-    script(src='emailMsg/js/bootstrap.js')
-    script(src='emailMsg/js/js.js')
-    script.
-      AOS.init();
-    script(src='emailMsg/js/owl.carousel.min.js')
-    script.
-      $('.owl-carousel').owlCarousel({
-      loop: true,
-      margin: 10,
-      nav: false,
-      dots: false,
-      autoplayTimeout: 3000,
-      autoplayHoverPause: true,
-      responsive: {
-      0: {
-      items: 1
-      },
-      600: {
-      items: 1
-      },
-      1000: {
-      items: 4
-      }
-      }
-      })
