@@ -88,7 +88,7 @@ authSchema.methods.checkPasswordChanged = function (JWTTimestamps) {
 };
 
 authSchema.methods.CreatePasswordResetCode = function () {
-  const randomNum = Math.floor(1000 + Math.random() * 9000).toString();
+  const randomNum = Math.floor(100000 + Math.random() * 900000).toString();
   this.passwordRestCode = crypto
     .createHash('sha256')
     .update(randomNum)

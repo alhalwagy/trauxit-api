@@ -87,16 +87,31 @@ exports.login = catchAsync(async (req, res, next) => {
   ) {
     return next(new AppError('Incorrect email or password', 401));
   }
+  if (
+    user.role === 'carrier' ||
+    user.role === 'subcarrier' ||
+    user.role === 'shipper'
+  ) {
+    const user_info = await User.findOne({ userid: user._id });
 
-  const user_info = await User.findOne({ userid: user._id });
+    const userData = { ...user._doc };
+    if (!user_info) {
+      return next(new AppError('there is no data for user', 401));
+    }
 
-  const userData = { ...user._doc };
-  if (!user_info) {
-    return next(new AppError('there is no data for user', 401));
+    // Create and send a JWT token and respond with user data
+    createSendToken({ userData, user_info }, 200, req, res);
+  } else if (user.role === 'teamlead' || user.role === 'company') {
+    const user_info = await Booker.findOne({ userid: user._id });
+    
+    if (!user_info) {
+      return next(new AppError('there is no data for user', 401));
+    }
+    const userData = { ...user._doc };
+
+    // Create and send a JWT token and respond with user data
+    createSendToken({ userData, user_info }, 200, req, res);
   }
-
-  // Create and send a JWT token and respond with user data
-  createSendToken({ userData, user_info }, 200, req, res);
 });
 
 exports.protect = catchAsync(async (req, res, next) => {
@@ -290,13 +305,19 @@ exports.signupUser = catchAsync(async (req, res, next) => {
       phoneNumber: req.body.phoneNumber,
       userid: req.user.id,
     });
+    const encryptedCompany_id = crypto
+      .createHash('sha256')
+      .update(req.body.group_id)
+      .digest('hex');
+
+    console.log(encryptedCompany_id);
     const team = await Booker.findOneAndUpdate(
-      { group_id: req.body.group_id },
+      { group_id: encryptedCompany_id },
       { $push: { friends: req.user.id } }
     );
 
     if (!team) {
-      await User.findByIdAndDelete(newUser._id);
+      await User.findByIdAndDelete(user_info._id);
       await Authentication.findByIdAndDelete(req.user.id);
       return next(new AppError('There is No Team with this id'), 404);
     }
@@ -325,6 +346,7 @@ exports.signupUser = catchAsync(async (req, res, next) => {
       group_id: encryptedCompany_id,
       address: req.body.address,
       phoneNumber: req.body.phoneNumber,
+      userid: req.user.id,
     });
 
     await new Email(req.user, group_id).sendTeamId();

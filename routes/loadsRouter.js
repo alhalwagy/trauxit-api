@@ -34,7 +34,7 @@ router
   .route('/carrier/')
   .get(
     authController.protect,
-    authController.restrictTo('carrier', 'small-carrier'),
+    authController.restrictTo('carrier', 'subcarrier', 'teamlead', 'company'),
     loadController.getLoadsForCarrier
   );
 

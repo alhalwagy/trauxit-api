@@ -45,13 +45,13 @@ router
     carController.createCar
   );
 
-router
-  .route('/get-available-loads/')
-  .get(
-    authController.protect,
-    authController.restrictTo('carrier'),
-    loadController.getLoadsForCarrier
-  );
+// router
+//   .route('/get-available-loads/')
+//   .get(
+//     authController.protect,
+//     authController.restrictTo('carrier'),
+//     loadController.getLoadsForCarrier
+//   );
 
 router
   .route('/my-members/')
@@ -59,6 +59,22 @@ router
     authController.protect,
     authController.restrictTo('teamlead', 'company'),
     bookerController.getMyMembers
+  );
+
+router
+  .route('/getAllSubcarriers/')
+  .get(
+    authController.protect,
+    authController.restrictTo('teamlead', 'company'),
+    bookerController.getAllSubcarriers
+  );
+
+router
+  .route('/addTeamLeaderToCompany/')
+  .post(
+    authController.protect,
+    authController.restrictTo('teamlead'),
+    bookerController.assignTeamLeaderToComany
   );
 
 module.exports = router;

@@ -13,30 +13,12 @@ const signToken = (id) => {
 
 const bookerSchema = new mongoose.Schema(
   {
-    password: {
-      type: String,
-      required: [true, 'Company must have a Password.'],
-    },
     groupName: {
       type: String,
     },
     address: { type: String, required: [true, 'Address is required.'] },
     rating: Number,
-    hashToken: {
-      type: String,
-    },
-    email: {
-      type: String,
-      required: [true, 'A booker must have a email'],
-      unique: true,
-      lowercase: true,
-      validate: [validator.isEmail, 'please provide a valid email'],
-    },
-    userName: {
-      type: String,
-      unique: true,
-      required: [true, 'Booker must have userName'],
-    },
+
     phoneNumber: {
       required: [true, 'Phone Number is required'],
       unique: true,
@@ -47,13 +29,10 @@ const bookerSchema = new mongoose.Schema(
     friends: [
       {
         type: mongoose.Schema.Types.ObjectId,
-        ref: 'User',
+        ref: 'Authentication',
       },
     ],
-    role: {
-      type: String,
-      enum: ['company', 'teamleader'],
-    },
+
     group_id: {
       type: String,
       unique: true,
@@ -61,11 +40,11 @@ const bookerSchema = new mongoose.Schema(
     fullName: String,
     image: String,
 
-    passwordChangedAt: Date,
-    passwordRestCode: String,
-    passwordRestExpires: Date,
-    passwordRestIsused: Boolean,
     birthDate: Date,
+    userid: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Authentication',
+    },
   },
   {
     timestamps: true,

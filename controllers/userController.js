@@ -80,6 +80,9 @@ exports.uploadUserImage = upload.fields([
 ]);
 
 exports.resizeUserImage = catchAsync(async (req, res, next) => {
+  if (!req.files) {
+    return next();
+  }
   if (!req.files.image) {
     console.log('ADFFFS');
     return next();
@@ -130,25 +133,26 @@ exports.updateMe = catchAsync(async (req, res, next) => {
 
   // Check if an old image exists
   console.log(req.files);
-  if (req.files.image) {
+
+  if (req.files && req.files.image) {
     const imageUrl = await User.findOne({ userid: req.user.id });
-    if(imageUrl.image){
-    // console.log(req.user.image);
-    const parts = imageUrl.image.split('User');
-    // Get the path to the old image
-    const oldImagePath = `public/img/User${parts[1]}`;
-    console.log(
-      '.....................................................................'
-    );
+    if (imageUrl.image) {
+      // console.log(req.user.image);
+      const parts = imageUrl.image.split('User');
+      // Get the path to the old image
+      const oldImagePath = `public/img/User${parts[1]}`;
+      console.log(
+        '.....................................................................'
+      );
 
-    console.log(oldImagePath);
+      console.log(oldImagePath);
 
-    // Check if the old image file exists
-    if (fs.existsSync(oldImagePath)) {
-      // Delete the old image file
-      fs.unlinkSync(oldImagePath);
+      // Check if the old image file exists
+      if (fs.existsSync(oldImagePath)) {
+        // Delete the old image file
+        fs.unlinkSync(oldImagePath);
+      }
     }
-  }
   }
 
   //2) Filtered out unwanted fields that are not allowed to be updated
@@ -158,11 +162,12 @@ exports.updateMe = catchAsync(async (req, res, next) => {
     'phoneNumber',
     'birthDate',
     'address',
-    'mygrage'
+    'mygrage',
+    'groupName'
   );
 
   let imageUrl;
-  if (req.files.image) {
+  if (req.files && req.files.image) {
     imageUrl = `http://192.168.1.23:3000/public/img/${req.body.image}`;
 
     filteredBody.image = imageUrl;
@@ -183,19 +188,41 @@ exports.updateMe = catchAsync(async (req, res, next) => {
   }
   console.log(filteredBody);
   //3) Update the user document
-  if (Object.keys(filteredBody).length > 0) {
-    const updatedUser = await User.findOneAndUpdate(
-      { userid: req.user.id },
-      filteredBody,
-      {
-        new: true,
-        runValidators: true,
-      }
-    );
-    data.user_info = updatedUser;
+  if (
+    req.user.role === 'subcarrier' ||
+    req.user.role === 'carrier' ||
+    req.user.role === 'shipper'
+  ) {
+    if (Object.keys(filteredBody).length > 0) {
+      const updatedUser = await User.findOneAndUpdate(
+        { userid: req.user.id },
+        filteredBody,
+        {
+          new: true,
+          runValidators: true,
+        }
+      );
+      data.user_info = updatedUser;
+    }
+    return res.status(200).json({
+      status: 'success',
+      data,
+    });
+  } else if (req.user.role === 'company' || req.user.role === 'teamlead') {
+    if (Object.keys(filteredBody).length > 0) {
+      const updatedUser = await Booker.findOneAndUpdate(
+        { userid: req.user.id },
+        filteredBody,
+        {
+          new: true,
+          runValidators: true,
+        }
+      );
+      data.user_info = updatedUser;
+    }
+    return res.status(200).json({
+      status: 'success',
+      data,
+    });
   }
-  res.status(200).json({
-    status: 'success',
-    data,
-  });
 });
