@@ -8,6 +8,7 @@ const AppError = require('../utils/appError');
 const catchAsync = require('../utils/catchAsync');
 const Booker = require('../models/bookerModel');
 const Authentication = require('../models/authModel');
+const moment = require('moment-timezone');
 
 const multer = require('multer');
 const sharp = require('sharp');
@@ -120,6 +121,7 @@ const filterObj = (obj, ...allowedFields) => {
 
 exports.updateMe = catchAsync(async (req, res, next) => {
   console.log(req.body);
+
   let data = {};
   // console.log(req.files);
   if (req.body.password || req.body.passwordConfirm) {
@@ -130,31 +132,51 @@ exports.updateMe = catchAsync(async (req, res, next) => {
       )
     );
   }
-
   // Check if an old image exists
   console.log(req.files);
-
   if (req.files && req.files.image) {
-    const imageUrl = await User.findOne({ userid: req.user.id });
-    if (imageUrl.image) {
-      // console.log(req.user.image);
-      const parts = imageUrl.image.split('User');
-      // Get the path to the old image
-      const oldImagePath = `public/img/User${parts[1]}`;
-      console.log(
-        '.....................................................................'
-      );
+    if (
+      req.user.role === 'carrier' ||
+      req.user.role === 'subcarrier' ||
+      req.user.role === 'shipper'
+    ) {
+      const imageUrl = await User.findOne({ userid: req.user.id });
+      if (imageUrl.image) {
+        // console.log(req.user.image);
+        const parts = imageUrl.image.split('User');
+        // Get the path to the old image
+        const oldImagePath = `public/img/User${parts[1]}`;
+        console.log(
+          '.....................................................................'
+        );
+        console.log(oldImagePath);
 
-      console.log(oldImagePath);
+        // Check if the old image file exists
+        if (fs.existsSync(oldImagePath)) {
+          // Delete the old image file
+          fs.unlinkSync(oldImagePath);
+        }
+      }
+    } else {
+      const imageUrl = await Booker.findOne({ userid: req.user.id });
+      if (imageUrl.image) {
+        // console.log(req.user.image);
+        const parts = imageUrl.image.split('User');
+        // Get the path to the old image
+        const oldImagePath = `public/img/User${parts[1]}`;
+        console.log(
+          '.....................................................................'
+        );
+        console.log(oldImagePath);
 
-      // Check if the old image file exists
-      if (fs.existsSync(oldImagePath)) {
-        // Delete the old image file
-        fs.unlinkSync(oldImagePath);
+        // Check if the old image file exists
+        if (fs.existsSync(oldImagePath)) {
+          // Delete the old image file
+          fs.unlinkSync(oldImagePath);
+        }
       }
     }
   }
-
   //2) Filtered out unwanted fields that are not allowed to be updated
   const filteredBody = filterObj(
     req.body,
@@ -163,9 +185,9 @@ exports.updateMe = catchAsync(async (req, res, next) => {
     'birthDate',
     'address',
     'mygrage',
-    'groupName'
+    'groupName',
+    'createdAt'
   );
-
   let imageUrl;
   if (req.files && req.files.image) {
     imageUrl = `http://192.168.1.23:3000/public/img/${req.body.image}`;
@@ -173,7 +195,6 @@ exports.updateMe = catchAsync(async (req, res, next) => {
     filteredBody.image = imageUrl;
   }
   // console.log(filteredBody);
-
   if (req.body.email || req.body.userName) {
     const authUser = await Authentication.findByIdAndUpdate(
       req.user.id,
@@ -194,6 +215,14 @@ exports.updateMe = catchAsync(async (req, res, next) => {
     req.user.role === 'shipper'
   ) {
     if (Object.keys(filteredBody).length > 0) {
+      if (req.body.birthDate) {
+        filteredBody.birthDate = moment
+          .tz(req.body.birthDate, 'MM/DD/YYYY', 'America/New_York')
+          .toDate();
+        console.log('filteredBody.birthDate');
+        console.log(filteredBody.birthDate);
+      }
+
       const updatedUser = await User.findOneAndUpdate(
         { userid: req.user.id },
         filteredBody,
@@ -209,15 +238,25 @@ exports.updateMe = catchAsync(async (req, res, next) => {
       data,
     });
   } else if (req.user.role === 'company' || req.user.role === 'teamlead') {
+    console.log(req.user);
     if (Object.keys(filteredBody).length > 0) {
+      if (filteredBody.createdDate) {
+        filteredBody.createdDate = moment
+          .tz(req.body.createdDate, 'MM/DD/YYYY', 'America/New_York')
+          .toDate();
+        console.log('filteredBody.birthDate');
+        console.log(filteredBody.createdDate);
+      }
+
       const updatedUser = await Booker.findOneAndUpdate(
-        { userid: req.user.id },
+        { userid: req.user._id },
         filteredBody,
         {
           new: true,
           runValidators: true,
         }
       );
+      console.log(updatedUser);
       data.user_info = updatedUser;
     }
     return res.status(200).json({

@@ -152,10 +152,7 @@ exports.calcDistFromCarrierToShopping = catchAsync(async (req, res, next) => {
   console.log(point2);
 
   const travelMode = 'truck';
-  // TomTom API endpoint for calculating distance
   const apiUrl = `https://api.tomtom.com/routing/1/calculateRoute/${point1.lat},${point1.lon}:${point2.lat},${point2.lon}/json?travelMode=${travelMode}`;
-
-  // Make the API request
   axios
     .get(apiUrl, {
       params: {
@@ -172,9 +169,7 @@ exports.calcDistFromCarrierToShopping = catchAsync(async (req, res, next) => {
         );
       }
       const data = response.data;
-      // Extract the distance in meters from the response
       const distanceInMeters = data.routes[0].summary.lengthInMeters;
-      // Convert the distance to kilometers
       const distanceInKilometers = distanceInMeters * multiplier;
       const distance = distanceInKilometers.toFixed(2);
 
@@ -310,7 +305,7 @@ exports.updateCarrierToSubcarrier = catchAsync(async (req, res, next) => {
   } else {
     return next(
       new AppError(
-        'You lost your premissiom as carrier from your bad request. Please call our supporter to return your permition0.',
+        'You lost your premissiom as carrier from your bad request. Please call our supporter to return your permition to your account.',
         400
       )
     );

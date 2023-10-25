@@ -65,6 +65,13 @@ authSchema.set('toJSON', {
 
 authSchema.set('toJSON', {
   transform: function (doc, ret) {
+    delete ret.password;
+    delete ret.hashToken;
+  },
+});
+
+authSchema.set('toJSON', {
+  transform: function (doc, ret) {
     delete ret.hashToken;
   },
 });

@@ -1,5 +1,3 @@
-
-// Your other Swagger documentation annotations for routes can go here
 const mongoose = require('mongoose');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');

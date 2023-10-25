@@ -18,7 +18,7 @@ const bookerSchema = new mongoose.Schema(
     },
     address: { type: String, required: [true, 'Address is required.'] },
     rating: Number,
-
+    birthDate: Date,
     phoneNumber: {
       required: [true, 'Phone Number is required'],
       unique: true,
@@ -39,8 +39,6 @@ const bookerSchema = new mongoose.Schema(
     },
     fullName: String,
     image: String,
-
-    birthDate: Date,
     userid: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'Authentication',
@@ -64,18 +62,6 @@ bookerSchema.pre('save', async function (next) {
   this.password = await bcrypt.hash(this.password, 14);
   this.passwordConfirm = undefined; // Clear the passwordConfirm field
   next();
-});
-
-bookerSchema.set('toJSON', {
-  transform: function (doc, ret) {
-    delete ret.password;
-  },
-});
-
-bookerSchema.set('toJSON', {
-  transform: function (doc, ret) {
-    delete ret.hashToken;
-  },
 });
 
 bookerSchema.methods.correctPassword = async function (

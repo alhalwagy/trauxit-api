@@ -8,6 +8,7 @@ const catchAsync = require('../utils/catchAsync');
 const Booker = require('../models/bookerModel');
 const Email = require('../utils/email');
 const Authentication = require('../models/authModel');
+const moment = require('moment-timezone');
 
 const signToken = (id) => {
   return jwt.sign({ id }, process.env.JWT_SECRET, {
@@ -103,7 +104,7 @@ exports.login = catchAsync(async (req, res, next) => {
     createSendToken({ userData, user_info }, 200, req, res);
   } else if (user.role === 'teamlead' || user.role === 'company') {
     const user_info = await Booker.findOne({ userid: user._id });
-    
+
     if (!user_info) {
       return next(new AppError('there is no data for user', 401));
     }
@@ -283,9 +284,12 @@ exports.resetPassword = catchAsync(async (req, res, next) => {
 exports.signupUser = catchAsync(async (req, res, next) => {
   // console.log(req.user);
   if (req.user.role === 'carrier' || req.user.role === 'shipper') {
+    const birthDate = moment
+      .tz(req.body.birthDate, 'MM/DD/YYYY', 'America/New_York')
+      .toDate();
     let user_info = await User.create({
       fullName: req.body.fullName,
-      birthDate: req.body.birthDate,
+      birthDate,
       address: req.body.address,
       phoneNumber: req.body.phoneNumber,
       userid: req.user.id,
@@ -298,9 +302,12 @@ exports.signupUser = catchAsync(async (req, res, next) => {
     await new Email(req.user).sendWelcome();
     return createSendToken({ userData, user_info }, 201, req, res);
   } else if (req.user.role === 'subcarrier') {
+    const birthDate = moment
+      .tz(req.body.birthDate, 'MM/DD/YYYY', 'America/New_York')
+      .toDate();
     const user_info = await User.create({
       fullName: req.body.fullName,
-      birthDate: req.body.birthDate,
+      birthDate,
       address: req.body.address,
       phoneNumber: req.body.phoneNumber,
       userid: req.user.id,
@@ -326,6 +333,7 @@ exports.signupUser = catchAsync(async (req, res, next) => {
     // Create and send a JWT token and respond with user data
     return createSendToken({ userData, user_info }, 201, req, res);
   } else if (req.user.role === 'company' || req.user.role === 'teamlead') {
+    console.log(req.body);
     if (req.body.password != req.body.passwordConfirm) {
       return next(new AppError('Password confirm do not match.', 400));
     }
@@ -335,19 +343,19 @@ exports.signupUser = catchAsync(async (req, res, next) => {
     if (!req.body.groupName || !req.body.address || !req.body.phoneNumber) {
       return next(new AppError('The body of request not completed.'), 400);
     }
+    if (req.body.birthDate) {
+      req.body.birthDate = moment
+        .tz(req.body.birthDate, 'MM/DD/YYYY', 'America/New_York')
+        .toDate();
+    }
 
     const encryptedCompany_id = crypto
       .createHash('sha256')
       .update(group_id)
       .digest('hex');
-
-    const user_info = await Booker.create({
-      groupName: req.body.groupName,
-      group_id: encryptedCompany_id,
-      address: req.body.address,
-      phoneNumber: req.body.phoneNumber,
-      userid: req.user.id,
-    });
+    req.body.group_id = encryptedCompany_id;
+    req.body.userid = req.user._id;
+    const user_info = await Booker.create(req.body);
 
     await new Email(req.user, group_id).sendTeamId();
     const userData = { ...req.user._doc };

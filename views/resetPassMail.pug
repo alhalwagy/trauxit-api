@@ -76,33 +76,43 @@ head
     margin-bottom: 50px;
     }
     .otp__input {
-    width: 380px;
-    text-align: left;
+    /*width: 380px;*/
+    text-align: center;
     display: inline-block;
+    margin: auto !important;
     }
     .otp__input input {
-    padding: 0;
-    width: 380px;
+    padding: 5px;
+    /* width: 380px; */
     font-size: 27px;
     font-weight: 600;
     color: #3e3e3e;
     background-color: transparent;
-    border: 0;
-    margin-left: 12px;
-    letter-spacing: 48px;
+    border: 1px solid #333;
+    /* margin-left: 12px; */
+    letter-spacing: 25px;
     font-family: sans-serif !important;
+    margin: auto !important;
+    text-align: center;
+    border-radius: 8px;
+    padding-left: 25px;
+    width: 300px;
     }
     .otp__input input:focus {
     box-shadow: none;
     outline: none;
     }
-    .otp__input svg {
+    .otp__input p {
+    font-size: 17px;
+    font-weight: 500;
+    }
+    /*   .otp__input svg {
     position: relative;
     display: block;
     width: 350px;
     height: 2px;
-    }
-    @media (min-width:0) and (max-width:360px) {
+    } */
+    @media (min-width:0) and (max-width:600px) {
     .home {
     width: 100%;
     }
@@ -118,75 +128,8 @@ head
     .msg__btn {
     padding: 15px 40px;
     }
-    .otp__input {
-    margin-left: 10px;
-    }
-    .otp__input svg {
-    width: 320px;
-    }
-    .otp__input input {
-    margin-left: 12px;
-    letter-spacing: 40px;
-    }
-    }
-    @media (min-width:370px) and (max-width:380px) {
-    .home {
-    width: 100%;
-    }
-    .msg,
-    .msg__para,
-    .ai__para,
-    hr {
-    width: 100%;
-    }
-    .msg__para {
-    padding: 0 10px;
-    }
-    .msg__btn {
-    padding: 15px 40px;
-    }
-    .otp__input {
-    margin-left: 5px;
-    }
-    }
-    @media (min-width:390px) and (max-width:400px) {
-    .home {
-    width: 100%;
-    }
-    .msg,
-    .msg__para,
-    .ai__para,
-    hr {
-    width: 100%;
-    }
-    .msg__para {
-    padding: 0 10px;
-    }
-    .msg__btn {
-    padding: 15px 40px;
-    }
-    .otp__input {
-    margin-left: 10px;
-    }
-    }
-    @media (min-width:400px) and (max-width:600px) {
-    .home {
-    width: 100%;
-    }
-    .msg,
-    .msg__para,
-    .ai__para,
-    hr {
-    width: 100%;
-    }
-    .msg__para {
-    padding: 0 10px;
-    }
-    .msg__btn {
-    padding: 15px 40px;
-    }
-    .otp__input {
-    margin-left: 20px;
+    .otp__input p {
+    font-size: 15px;
     }
     }
     @media (min-width:600px) and (max-width:900px) {
@@ -209,15 +152,20 @@ section.container.pt-5.pb-5
   .home
     .email__msg
       .logo__body
-        img.logo(alt=' ' src='img/Logo. 1.png')
+        img.logo(alt=' ' src='https://trauxit.app/resetMsg/img/Logo.png')
         h1 TRAUXIT
       .email__body
         p.email__para Hello, #{userName}
         h1.email__title Nice to meet you.!
-        img.msg(alt='' src='img/msg.jpeg')
+        img.msg(alt='' src='https://trauxit.app/resetMsg/img/msg.jpeg')
         h1.otp__title Your Password Reset Code
         .otp
           .otp__input
-            input(type='text' maxlength='6' pattern='[0-9]*' autocomplete='off' placeholder='000000' readonly='' value= `${randomNum}`)
-            svg(viewbox='0 0 370 1' xmlns='http://www.w3.org/2000/svg')
-              line(x1='0' y1='0' x2='370' y2='0' stroke='#3e3e3e' stroke-width='2' stroke-dasharray='44,22')
+            input(type='text' readonly='' value=`${randomNum}`)
+            //
+              <svg viewBox="0 0 370 1" xmlns="http://www.w3.org/2000/svg">
+              <line x1="0" y1="0" x2="370" y2="0" stroke="#3e3e3e" stroke-width="2"
+              stroke-dasharray="44,22" />
+              </svg>
+            p
+              | Keep in mind that the code is only valid for 10 minutes.
