@@ -9,7 +9,7 @@ router
   .route('/mycars')
   .get(
     authController.protect,
-    authController.restrictTo('carrier'),
+    authController.restrictTo('carrier', 'subcarrier'),
     carController.getMyCar
   );
 
@@ -17,7 +17,7 @@ router
   .route('/')
   .post(
     authController.protect,
-    authController.restrictTo('carrier', 'small-carrier'),
+    authController.restrictTo('carrier', 'subcarrier'),
     carController.createCar
   )
   .get(

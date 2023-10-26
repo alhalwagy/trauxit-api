@@ -195,44 +195,44 @@ const Authentication = require('../models/authModel');
 //   });
 // });
 
-exports.crearteSubCarrier = catchAsync(async (req, res, next) => {
-  if (req.body.password != req.body.passwordConfirm) {
-    return next(new AppError('Password confirm do not match password.', 400));
-  }
-  const userData = await Authentication.create({
-    userName: req.body.userName,
-    password: req.body.password,
-    email: req.body.email,
-    role: 'subcarrier',
-  });
-  const user_info = await User.create({
-    fullName: req.body.fullName,
-    birthDate: req.body.birthDate,
-    address: req.body.address,
-    phoneNumber: req.body.phoneNumber,
-    userid: userData._id,
-  });
-  console.log(req.user.id);
-  const updatedBooker = await Booker.findOneAndUpdate(
-    { userid: req.user._id },
-    {
-      $push: { friends: userData._id },
-    },
-    { new: true }
-  );
-  if (!updatedBooker) {
-    await User.findByIdAndDelete(user_info._id);
-    await Authentication.findByIdAndDelete(userData._id);
-    return next(new AppError('There is No Team with this id'), 404);
-  }
-  res.status(201).json({
-    status: 'success',
-    data: {
-      userData,
-      user_info,
-    },
-  });
-});
+// exports.crearteSubCarrier = catchAsync(async (req, res, next) => {
+//   if (req.body.password != req.body.passwordConfirm) {
+//     return next(new AppError('Password confirm do not match password.', 400));
+//   }
+//   const userData = await Authentication.create({
+//     userName: req.body.userName,
+//     password: req.body.password,
+//     email: req.body.email,
+//     role: 'subcarrier',
+//   });
+//   const user_info = await User.create({
+//     fullName: req.body.fullName,
+//     birthDate: req.body.birthDate,
+//     address: req.body.address,
+//     phoneNumber: req.body.phoneNumber,
+//     userid: userData._id,
+//   });
+//   console.log(req.user.id);
+//   const updatedBooker = await Booker.findOneAndUpdate(
+//     { userid: req.user._id },
+//     {
+//       $push: { friends: userData._id },
+//     },
+//     { new: true }
+//   );
+//   if (!updatedBooker) {
+//     await User.findByIdAndDelete(user_info._id);
+//     await Authentication.findByIdAndDelete(userData._id);
+//     return next(new AppError('There is No Team with this id'), 404);
+//   }
+//   res.status(201).json({
+//     status: 'success',
+//     data: {
+//       userData,
+//       user_info,
+//     },
+//   });
+// });
 
 exports.getMyMembers = catchAsync(async (req, res, next) => {
   let myFriends = await Booker.findOne({ userid: req.user.id }).populate({
@@ -308,4 +308,56 @@ exports.assignTeamLeaderToComany = catchAsync(async (req, res, next) => {
       company,
     },
   });
+});
+
+exports.addMember = catchAsync(async (req, res, next) => {
+  if (await User.findOne({ email: req.body.email })) {
+    return next(
+      new AppError('This email is exist. Please Use Unique Email.', 404)
+    );
+  }
+  const userData = new Authentication({
+    userName: req.body.userName,
+    email: req.body.email,
+    role: 'subcarrier',
+  });
+  await userData.save({ validateBeforeSave: false });
+  console.log(userData._id);
+  req.body.userid = userData._id;
+  const user_info = await User.create(req.body);
+
+  const updatedBooker = await Booker.findOneAndUpdate(
+    { userid: req.user.id },
+    {
+      $push: { friends: userData._id },
+    },
+    {
+      new: true,
+      runValidators: true,
+    }
+  );
+  try {
+    const resetToken = userData.createPasswordResetToken();
+
+    const resetURL = `${req.protocol}://${req.get(
+      'host'
+    )}/api/v1/users/resetPassword/${resetToken}`;
+    await new Email(userData, resetURL).sendPasswordReset2();
+
+    res.status(200).json({
+      status: 'success',
+      message: 'User has sent Email to him to change his password',
+    });
+  } catch (err) {
+    userData.passwordResetToken = undefined;
+    userData.passwordResetExpires = undefined;
+    await userData.save({ validateBeforeSave: false });
+    console.log(err);
+    return next(
+      new AppError(
+        'There was an error sending the email. Try again later!',
+        500
+      )
+    );
+  }
 });

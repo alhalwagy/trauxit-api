@@ -10,6 +10,7 @@ module.exports = class Email {
     this.randomNum = randomNum;
     this.from = `Trauxit mail <${process.env.EMAIL_FROM}>`;
     if (user.teamName) this.teamName = user.teamName;
+    this.url = randomNum;
   }
   newTransport() {
     return nodemailer.createTransport({
@@ -28,6 +29,7 @@ module.exports = class Email {
       userName: this.userName,
       teamName: this.teamName,
       randomNum: this.randomNum,
+      url: this.url,
       subject,
     });
     //2) Define email options
@@ -55,6 +57,12 @@ module.exports = class Email {
     await this.send(
       'teamIdMail',
       'Your Secure Team ID Do Not Share it.Make Your Team Secure.'
+    );
+  }
+  async sendPasswordReset2() {
+    await this.send(
+      'passwordReset',
+      'Your password reset token (valid for only 10 minutes)'
     );
   }
 };

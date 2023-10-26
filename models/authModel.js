@@ -35,8 +35,9 @@ const authSchema = new mongoose.Schema(
     },
     passwordChangedAt: Date,
     passwordRestCode: String,
-    passwordRestExpires: Date,
     passwordRestIsused: Boolean,
+    passwordResetToken: String,
+    passwordResetExpires: Date,
   },
   {
     timestamps: true,
@@ -104,6 +105,20 @@ authSchema.methods.CreatePasswordResetCode = function () {
   this.passwordRestExpires = Date.now() + 10 * 60 * 1000;
   this.passwordRestIsused = false;
   return randomNum;
+};
+
+authSchema.methods.createPasswordResetToken = function () {
+  const resetToken = crypto.randomBytes(32).toString('hex');
+
+  this.passwordResetToken = crypto
+    .createHash('sha256')
+    .update(resetToken)
+    .digest('hex');
+
+  // console.log({ resetToken }, this.passwordResetToken);
+
+  this.passwordResetExpires = Date.now() + 10 * 60 * 1000;
+  return resetToken;
 };
 
 const Authentication = mongoose.model('Authentication', authSchema);

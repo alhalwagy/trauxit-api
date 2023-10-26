@@ -34,7 +34,7 @@ router
   .post(
     authController.protect,
     authController.restrictTo('teamlead'),
-    bookerController.crearteSubCarrier
+    bookerController.addMember
   );
 // create car for member with booker
 router
