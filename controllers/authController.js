@@ -296,7 +296,7 @@ exports.signupUser = catchAsync(async (req, res, next) => {
     });
     const userData = { ...req.user._doc };
     console.log(
-      '..................................................................................'
+      '............................................................................................................................................................................'
     );
     console.log({ userData });
     await new Email(req.user).sendWelcome();
@@ -329,7 +329,7 @@ exports.signupUser = catchAsync(async (req, res, next) => {
       return next(new AppError('There is No Team with this id'), 404);
     }
     const userData = { ...req.user._doc };
-    await new Email(req.user).sendWelcome();
+    // await new Email(req.user).sendWelcome();
     // Create and send a JWT token and respond with user data
     return createSendToken({ userData, user_info }, 201, req, res);
   } else if (req.user.role === 'company' || req.user.role === 'teamlead') {
@@ -357,7 +357,7 @@ exports.signupUser = catchAsync(async (req, res, next) => {
     req.body.userid = req.user._id;
     const user_info = await Booker.create(req.body);
 
-    await new Email(req.user, group_id).sendTeamId();
+    // await new Email(req.user, group_id).sendTeamId();
     const userData = { ...req.user._doc };
     return createSendToken({ userData, user_info }, 201, req, res);
   }

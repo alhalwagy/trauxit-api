@@ -16,9 +16,15 @@ module.exports = class Email {
     return nodemailer.createTransport({
       host: process.env.EMAIL_HOST,
       port: process.env.EMAIL_PORT,
+      secure: true,
+
       auth: {
         user: process.env.EMAIL_USERNAME,
-        pass: '4X{A+Ilr#CiU',
+        pass: '&sd8av&WKG?k',
+      },
+      tls: {
+        ciphers: 'SSLv3',
+        rejectUnauthorized: false,
       },
     });
   }
@@ -66,3 +72,4 @@ module.exports = class Email {
     );
   }
 };
+
