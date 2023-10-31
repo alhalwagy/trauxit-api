@@ -43,6 +43,12 @@ const bookerSchema = new mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: 'Authentication',
     },
+    myTeams: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Authentication',
+      },
+    ],
   },
   {
     timestamps: true,

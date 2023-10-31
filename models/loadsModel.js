@@ -14,7 +14,7 @@ const loadsSchema = new mongoose.Schema(
           // Check if a User with the given id exists
           const check = await mongoose
             .model('Authentication')
-            .findById(shipper);
+            .findOne({ _id: shipper, role: 'shipper' });
           return check;
         },
         message: 'There is no Shipper with this name or Id',

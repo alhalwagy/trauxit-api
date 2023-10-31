@@ -19,7 +19,7 @@ exports.createLoad = catchAsync(async (req, res, next) => {
     // Populate the 'idShipper' field in the load with additional user data
     await load.populate({
       path: 'idShipper',
-      select: 'fullName userName role address companyName',
+      select: 'userName role email',
     });
     req.load = load;
     console.log(req.load);
@@ -63,17 +63,13 @@ exports.createLoad = catchAsync(async (req, res, next) => {
   }
 });
 
-// Controller function to get loads for a shipper
 exports.getLoadsForShipper = catchAsync(async (req, res, next) => {
-  // Find all loads associated with the requesting shipper (user)
   const loads = await Loads.find({ idShipper: req.user.id });
 
-  // If no loads are found, return a 404 error
   if (loads.length === 0) {
     return next(new AppError('There is no loads for specified shipper.', 404));
   }
 
-  // Send a JSON response with the loaded loads
   res.status(200).json({
     status: 'success',
     length: loads.length,
@@ -83,7 +79,6 @@ exports.getLoadsForShipper = catchAsync(async (req, res, next) => {
   });
 });
 
-// Controller function to get available loads for a carrier
 exports.getLoadsForCarrier = catchAsync(async (req, res, next) => {
   const countDocs = await Loads.countDocuments({ status: 'available' });
   const features = new APIFeatures(
@@ -98,12 +93,11 @@ exports.getLoadsForCarrier = catchAsync(async (req, res, next) => {
 
   const loads = await features.query;
   console.log(loads);
-  // If no available loads are found, return a 404 error
+
   if (loads.length === 0) {
     return next(new AppError('There is no more loads available.', 404));
   }
 
-  // Send a JSON response with the loaded available loads
   res.status(200).json({
     status: 'success',
     length: loads.length,
@@ -113,17 +107,13 @@ exports.getLoadsForCarrier = catchAsync(async (req, res, next) => {
   });
 });
 
-// Controller function to book a load for a carrier
 exports.bookingLoads = catchAsync(async (req, res, next) => {
-  // Check if the load's status is 'Booked'
   const loadCheck = (await Loads.findById(req.params.id)).status;
 
-  // If it's already booked, return an error
   if (loadCheck === 'Booked') {
     return next(new AppError('This Load Booked'));
   }
 
-  // Update the load's status to 'Booked' and associate it with the carrier
   const load = await Loads.findByIdAndUpdate(
     req.params.id,
     {
@@ -132,7 +122,6 @@ exports.bookingLoads = catchAsync(async (req, res, next) => {
     { new: true, runValidators: false }
   );
 
-  // If the specified load ID is not found, return a 404 error
   if (!load) {
     return next(new AppError('There is no loads for specified Id.', 404));
   }
@@ -147,7 +136,6 @@ exports.bookingLoads = catchAsync(async (req, res, next) => {
   // });
 });
 
-// filter the load with the distance
 exports.getLoadWithin = catchAsync(async (req, res, next) => {
   const { distance, unit } = req.params;
   const raduis = unit === 'mi' ? distance / 3963.2 : distance / 6378.1;
@@ -166,7 +154,6 @@ exports.getLoadWithin = catchAsync(async (req, res, next) => {
     },
   });
 
-  //Response filter the load with the distance//
   res.status(200).json({
     status: 'success',
     result: loads.length,

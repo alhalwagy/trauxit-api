@@ -48,10 +48,6 @@ const adminSchema = new mongoose.Schema(
       lowercase: true,
       validate: [validator.isEmail, 'please provide a valid email'],
     },
-    passwordChangedAt: Date,
-    passwordRestCode: String,
-    passwordRestExpires: Date,
-    passwordRestIsused: Boolean,
   },
   {
     timestamps: true, // Automatically adds createdAt and updatedAt timestamps to the document

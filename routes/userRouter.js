@@ -23,6 +23,8 @@ router
   .route('/updatemypassword')
   .patch(authController.protect, userController.updateMyPassword);
 
+router.route('/passwordreset/:token').post(authController.passwordReset);
+
 router.post('/forgetpassword', authController.forgetPassword);
 router.post('/verifyresetcode', authController.verifyResetCode);
 router.post('/resetpassword', authController.resetPassword);

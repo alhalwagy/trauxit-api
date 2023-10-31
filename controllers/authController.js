@@ -1,14 +1,14 @@
 const { promisify } = require('util');
 const jwt = require('jsonwebtoken');
 const crypto = require('crypto');
+const moment = require('moment-timezone');
 
-const User = require('../models/userModel');
 const AppError = require('../utils/appError');
 const catchAsync = require('../utils/catchAsync');
+const User = require('../models/userModel');
 const Booker = require('../models/bookerModel');
 const Email = require('../utils/email');
 const Authentication = require('../models/authModel');
-const moment = require('moment-timezone');
 
 const signToken = (id) => {
   return jwt.sign({ id }, process.env.JWT_SECRET, {
@@ -357,8 +357,39 @@ exports.signupUser = catchAsync(async (req, res, next) => {
     req.body.userid = req.user._id;
     const user_info = await Booker.create(req.body);
 
-    // await new Email(req.user, group_id).sendTeamId();
+    await new Email(req.user, group_id).sendTeamId();
     const userData = { ...req.user._doc };
     return createSendToken({ userData, user_info }, 201, req, res);
   }
+});
+
+exports.passwordReset = catchAsync(async (req, res, next) => {
+  if (req.body.password != req.body.passwordConfirm) {
+    return next(new AppError('Password confirm do not match password.', 400));
+  }
+  const hashedToken = crypto
+    .createHash('sha256')
+    .update(req.params.token)
+    .digest('hex');
+    console.log(hashedToken);
+  const user = await Authentication.findOne({
+    passwordResetToken: hashedToken,
+    passwordResetExpires: {
+      $gt: Date.now(),
+    },
+  });
+  //2) if token has not expired, and there is user , set the new password
+  if (!user) {
+    return next(new AppError('Token is invalid or has been expired', 400));
+  }
+  user.password = req.body.password;
+  user.passwordResetToken = undefined;
+  user.passwordResetExpires = undefined;
+  user.passwordChangedAt = Date.now();
+  await user.save();
+
+  res.status(200).json({
+    status: 'success',
+    message: 'Password Updated Successfully.',
+  });
 });

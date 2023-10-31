@@ -33,10 +33,19 @@ router
   .route('/create-member/')
   .post(
     authController.protect,
-    authController.restrictTo('teamlead'),
+    authController.restrictTo('teamlead', 'company'),
     bookerController.addMember
   );
 // create car for member with booker
+
+router
+  .route('/create-teamleader/')
+  .post(
+    authController.protect,
+    authController.restrictTo('company'),
+    bookerController.addTeamleader
+  );
+
 router
   .route('/create-member-car/')
   .post(

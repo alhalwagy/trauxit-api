@@ -17,6 +17,19 @@ const Car = require('../models/carModel');
 const Email = require('../utils/email');
 const Authentication = require('../models/authModel');
 
+function generateRandomText(length) {
+  const characters =
+    'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+  let result = '';
+
+  for (let i = 0; i < length; i++) {
+    const randomIndex = crypto.randomInt(0, characters.length);
+    result += characters.charAt(randomIndex);
+  }
+
+  return result;
+}
+
 // const multerStorage = multer.memoryStorage();
 
 // const multerFilter = (req, file, cb) => {
@@ -311,17 +324,20 @@ exports.assignTeamLeaderToComany = catchAsync(async (req, res, next) => {
 });
 
 exports.addMember = catchAsync(async (req, res, next) => {
-  if (await User.findOne({ email: req.body.email })) {
+  if (await Authentication.findOne({ email: req.body.email })) {
     return next(
       new AppError('This email is exist. Please Use Unique Email.', 404)
     );
   }
-  const userData = new Authentication({
-    userName: req.body.userName,
-    email: req.body.email,
+  req.body.password = generateRandomText(10);
+
+  const userData = await Authentication.create({
     role: 'subcarrier',
+    userName: req.body.userName,
+    password: req.body.password,
+    email: req.body.email,
   });
-  await userData.save({ validateBeforeSave: false });
+  // await userData.save({ validateBeforeSave: false });
   console.log(userData._id);
   req.body.userid = userData._id;
   const user_info = await User.create(req.body);
@@ -338,10 +354,79 @@ exports.addMember = catchAsync(async (req, res, next) => {
   );
   try {
     const resetToken = userData.createPasswordResetToken();
+    console.log(userData);
+    await userData.save({ validateBeforeSave: false });
 
     const resetURL = `${req.protocol}://${req.get(
       'host'
-    )}/api/v1/users/resetPassword/${resetToken}`;
+    )}/api/v1/users/passwordreset/${resetToken}`;
+    await new Email(userData, resetURL).sendPasswordReset2();
+
+    res.status(200).json({
+      status: 'success',
+      message: 'User has sent Email to him to change his password',
+    });
+  } catch (err) {
+    userData.passwordResetToken = undefined;
+    userData.passwordResetExpires = undefined;
+    await userData.save({ validateBeforeSave: false });
+    console.log(err);
+    return next(
+      new AppError(
+        'There was an error sending the email. Try again later!',
+        500
+      )
+    );
+  }
+});
+
+exports.addTeamleader = catchAsync(async (req, res, next) => {
+  if (await Authentication.findOne({ email: req.body.email })) {
+    return next(
+      new AppError('This email is exist. Please Use Unique Email.', 404)
+    );
+  }
+  req.body.password = generateRandomText(10);
+  const userData = await Authentication.create({
+    role: 'teamlead',
+    userName: req.body.userName,
+    password: req.body.password,
+    email: req.body.email,
+  });
+  req.body.userid = userData._id;
+  const group_id = Math.floor(10000000 + Math.random() * 90000000).toString();
+  const encryptedCompany_id = crypto
+    .createHash('sha256')
+    .update(group_id)
+    .digest('hex');
+  req.body.group_id = encryptedCompany_id;
+
+  if (!req.body.groupName || !req.body.address || !req.body.phoneNumber) {
+    return next(new AppError('The body of request not completed.'), 400);
+  }
+
+  const user_info = await Booker.create(req.body);
+
+  const updatedBooker = await Booker.findOneAndUpdate(
+    { userid: req.user.id },
+    {
+      $push: { myTeams: userData._id },
+    },
+    {
+      new: true,
+      runValidators: true,
+    }
+  );
+  await new Email(userData, group_id).sendTeamId();
+
+  try {
+    const resetToken = userData.createPasswordResetToken();
+    console.log(userData);
+    await userData.save({ validateBeforeSave: false });
+
+    const resetURL = `${req.protocol}://${req.get(
+      'host'
+    )}/api/v1/user/passwordreset/${resetToken}`;
     await new Email(userData, resetURL).sendPasswordReset2();
 
     res.status(200).json({
