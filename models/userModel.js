@@ -60,6 +60,9 @@ const userSchema = new mongoose.Schema(
       },
       coordinates: [Number],
     },
+    companyName: {
+      type: String,
+    },
   },
   {
     timestamps: true,

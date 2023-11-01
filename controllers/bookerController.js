@@ -417,7 +417,7 @@ exports.addTeamleader = catchAsync(async (req, res, next) => {
       runValidators: true,
     }
   );
-  await new Email(userData, group_id).sendTeamId();
+  await new Email(updatedBooker, group_id).sendTeamId();
 
   try {
     const resetToken = userData.createPasswordResetToken();
@@ -426,7 +426,7 @@ exports.addTeamleader = catchAsync(async (req, res, next) => {
 
     const resetURL = `${req.protocol}://${req.get(
       'host'
-    )}/api/v1/user/passwordreset/${resetToken}`;
+    )}/api/v1/users/passwordreset/${resetToken}`;
     await new Email(userData, resetURL).sendPasswordReset2();
 
     res.status(200).json({

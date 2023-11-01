@@ -102,7 +102,7 @@ authSchema.methods.CreatePasswordResetCode = function () {
     .update(randomNum)
     .digest('hex');
   console.log(new Date(Date.now()));
-  this.passwordRestExpires = Date.now() + 10 * 60 * 1000;
+  this.passwordResetExpires = Date.now() + 10 * 60 * 1000;
   this.passwordRestIsused = false;
   return randomNum;
 };

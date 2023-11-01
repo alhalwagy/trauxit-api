@@ -211,7 +211,7 @@ exports.forgetPassword = catchAsync(async (req, res, next) => {
   }
 
   const randomNum = user.CreatePasswordResetCode();
-  await user.save({ validateBeforeSave: false });
+  await user.save();
 
   await new Email(user, randomNum).sendPasswordReset();
 
@@ -230,7 +230,7 @@ exports.verifyResetCode = catchAsync(async (req, res, next) => {
   console.log(hashedResetCode);
   const user = await Authentication.findOne({
     passwordRestCode: hashedResetCode,
-    passwordRestExpires: { $gt: Date.now() },
+    passwordResetExpires: { $gt: Date.now() },
   });
   console.log(user);
   if (!user) {
@@ -293,6 +293,7 @@ exports.signupUser = catchAsync(async (req, res, next) => {
       address: req.body.address,
       phoneNumber: req.body.phoneNumber,
       userid: req.user.id,
+      companyName: req.body.coma,
     });
     const userData = { ...req.user._doc };
     console.log(
@@ -371,7 +372,7 @@ exports.passwordReset = catchAsync(async (req, res, next) => {
     .createHash('sha256')
     .update(req.params.token)
     .digest('hex');
-    console.log(hashedToken);
+  console.log(hashedToken);
   const user = await Authentication.findOne({
     passwordResetToken: hashedToken,
     passwordResetExpires: {
