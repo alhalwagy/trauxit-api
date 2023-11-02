@@ -359,7 +359,7 @@ exports.addMember = catchAsync(async (req, res, next) => {
 
     const resetURL = `${req.protocol}://${req.get(
       'host'
-    )}/api/v1/users/passwordreset/${resetToken}`;
+    )}/api/v1/user/passwordreset/${resetToken}`;
     await new Email(userData, resetURL).sendPasswordReset2();
 
     res.status(200).json({
@@ -426,7 +426,7 @@ exports.addTeamleader = catchAsync(async (req, res, next) => {
 
     const resetURL = `${req.protocol}://${req.get(
       'host'
-    )}/api/v1/users/passwordreset/${resetToken}`;
+    )}/api/v1/user/passwordreset/${resetToken}`;
     await new Email(userData, resetURL).sendPasswordReset2();
 
     res.status(200).json({
@@ -446,3 +446,4 @@ exports.addTeamleader = catchAsync(async (req, res, next) => {
     );
   }
 });
+
