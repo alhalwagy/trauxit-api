@@ -190,7 +190,9 @@ exports.updateMe = catchAsync(async (req, res, next) => {
   );
   let imageUrl;
   if (req.files && req.files.image) {
-    imageUrl = `http://192.168.1.23:3000/public/img/${req.body.image}`;
+    imageUrl = `${req.protocol}://${req.get('host')}/public/img/${
+      req.body.image
+    }`;
 
     filteredBody.image = imageUrl;
   }
