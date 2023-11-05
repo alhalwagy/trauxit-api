@@ -15,21 +15,21 @@ const sharp = require('sharp');
 const { auth } = require('firebase-admin');
 
 exports.getMe = catchAsync(async (req, res, next) => {
-  const user = await Authentication.findById(req.user.id);
+  const user_info = await Authentication.findById(req.user.id);
 
   const userData = await User.findOne({ userid: req.user.id });
   if (!userData) {
     return next(new AppError('User not have A Data', 404));
   }
-  user.password = undefined;
-  if (!user) {
+  user_info.password = undefined;
+  if (!user_info) {
     return next(AppError('User not found', 404));
   }
 
   res.status(200).json({
     status: 'success',
     data: {
-      user,
+      user_info,
       userData,
     },
   });

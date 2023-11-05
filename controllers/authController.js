@@ -293,7 +293,7 @@ exports.signupUser = catchAsync(async (req, res, next) => {
       address: req.body.address,
       phoneNumber: req.body.phoneNumber,
       userid: req.user.id,
-      companyName: req.body.coma,
+      companyName: req.body.companyName,
     });
     const userData = { ...req.user._doc };
     console.log(
