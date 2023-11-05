@@ -10,6 +10,7 @@ const APIFeatures = require('./../utils/apiFeatures');
 exports.createLoad = catchAsync(async (req, res, next) => {
   // Check if the request is made by a user (shipper)
   if (req.user) {
+    console.log(req.body);
     // Associate the load with the shipper (user) and set its status to 'inprogress'
     const idShipper = req.user.id;
     req.body.idShipper = idShipper;
