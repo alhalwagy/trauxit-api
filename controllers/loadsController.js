@@ -65,8 +65,15 @@ exports.createLoad = catchAsync(async (req, res, next) => {
 });
 
 exports.getLoadsForShipper = catchAsync(async (req, res, next) => {
-  const loads = await Loads.find({ idShipper: req.user.id });
+  const features = new APIFeatures(
+    Loads.find({ idShipper: req.user.id }),
+    req.query
+  )
+    .sort()
+    .paginate(countDocs);
+  
 
+  const loads = await features.query;
   if (loads.length === 0) {
     return next(new AppError('There is no loads for specified shipper.', 404));
   }

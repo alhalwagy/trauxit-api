@@ -148,3 +148,9 @@ exports.createShipmentFromAToB = catchAsync(async (req, res, next) => {
       });
     });
 });
+
+exports.getMyLoadsStatistics = catchAsync(async (req, res, next) => {
+
+  
+
+});
